@@ -4,16 +4,16 @@ go 1.25.2
 
 require (
 	github.com/tdewolff/minify/v2 v2.24.12
-	webtyp.com/cloudflare v0.0.16
-	webtyp.com/ddl v0.0.12
-	webtyp.com/ghaction v0.1.1
-	webtyp.com/git v0.0.7
-	webtyp.com/gobuild v0.0.27
-	webtyp.com/modfind v0.0.8
-	webtyp.com/server v0.2.44
-	webtyp.com/sitec v0.2.7
-	webtyp.com/sqlt v0.0.8
-	webtyp.com/tinygo v1.0.0
+	webtyp.com/cloudflare v0.0.17
+	webtyp.com/ddl v0.0.15
+	webtyp.com/ghaction v0.1.2
+	webtyp.com/git v0.0.8
+	webtyp.com/gobuild v0.0.28
+	webtyp.com/modfind v0.0.9
+	webtyp.com/server v0.2.45
+	webtyp.com/sitec v0.2.8
+	webtyp.com/sqlt v0.0.10
+	webtyp.com/tinygo v1.0.1
 )
 
 require (
@@ -27,24 +27,24 @@ require (
 	golang.org/x/term v0.45.0 // indirect
 	golang.org/x/text v0.41.0 // indirect
 	howett.net/plist v1.0.0 // indirect
-	webtyp.com/color v0.1.1 // indirect
-	webtyp.com/command v0.0.2 // indirect
-	webtyp.com/fmt v0.25.7 // indirect
-	webtyp.com/font v0.0.4 // indirect
-	webtyp.com/image v0.1.0 // indirect
-	webtyp.com/js v0.0.4 // indirect
-	webtyp.com/storage v0.0.6 // indirect
+	webtyp.com/color v0.1.2 // indirect
+	webtyp.com/command v0.0.3 // indirect
+	webtyp.com/fmt v1.0.0 // indirect
+	webtyp.com/font v0.0.5 // indirect
+	webtyp.com/image v0.1.3 // indirect
+	webtyp.com/js v0.0.10 // indirect
+	webtyp.com/storage v0.0.7 // indirect
 )
 
 require (
 	github.com/tdewolff/parse/v2 v2.8.11 // indirect
-	webtyp.com/context v0.0.22 // indirect
-	webtyp.com/css v0.4.20 // indirect
-	webtyp.com/dom v0.13.9 // indirect
-	webtyp.com/fetch v0.1.24 // indirect
-	webtyp.com/html v0.0.19 // indirect
-	webtyp.com/json v0.5.23 // indirect
-	webtyp.com/model v0.1.7
-	webtyp.com/router v0.1.30
-	webtyp.com/svg v0.3.0 // indirect
+	webtyp.com/context v0.0.23 // indirect
+	webtyp.com/css v0.4.21 // indirect
+	webtyp.com/dom v0.13.10 // indirect
+	webtyp.com/fetch v0.1.28 // indirect
+	webtyp.com/html v0.0.21 // indirect
+	webtyp.com/json v0.5.25 // indirect
+	webtyp.com/model v0.1.8
+	webtyp.com/router v0.1.31
+	webtyp.com/svg v0.3.5 // indirect
 )
