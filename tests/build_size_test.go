@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinywasm/goflare"
+	"webtyp.com/goflare"
 )
 
 // TestBuild_StagingDirOutsideRepo verifies that New() uses os.MkdirTemp for the

@@ -16,7 +16,7 @@ falla un despliegue ajeno. Así que el archivo lo produce código, y un test lo
 mantiene sincronizado.
 
 **Precedente concreto de por qué importa.** La action de
-[`tinywasm/tinygo`](https://github.com/tinywasm/tinygo/blob/main/action.yml)
+[`webtyp/tinygo`](https://github.com/webtyp/tinygo/blob/main/action.yml)
 tiene hoy esta key de caché:
 
 ```yaml
@@ -46,8 +46,8 @@ action_data.go        ← especifico de goflare: construye el valor y lee el tag
 ```
 
 > ⚠️ **Regla dura para `actiongen/`: solo biblioteca estándar.** Ni
-> `tinywasm/git`, ni `tinywasm/fmt`, ni nada de goflare. El día que se extraiga
-> a `github.com/tinywasm/actiongen`, el paquete tiene que moverse sin tocar una
+> `webtyp/git`, ni `webtyp/fmt`, ni nada de goflare. El día que se extraiga
+> a `webtyp.com/actiongen`, el paquete tiene que moverse sin tocar una
 > línea. Todo lo que dependa de goflare vive en `action_data.go`, fuera del
 > paquete.
 
@@ -110,7 +110,7 @@ type Action struct {
 ```
 
 > ⚠️ **Nada de `map[K]V` en ningún archivo de este repo, tampoco en los que
-> llevan `//go:build !wasm`.** Es una restricción del ecosistema tinywasm. Para
+> llevan `//go:build !wasm`.** Es una restricción del ecosistema webtyp. Para
 > pares clave-valor usa `KeyValue` como arriba. Aquí, además, hay una razón
 > funcional: el recorrido de un mapa de Go es aleatorio, así que un `action.yml`
 > renderizado desde un mapa saldría distinto en cada corrida y el test de drift
@@ -175,7 +175,7 @@ func GoflareAction(tinyGoVersion, goflareVersion string) actiongen.Action
 func LatestReleaseTag() (string, error)
 ```
 
-`LatestReleaseTag` usa `github.com/tinywasm/git`, que **ya resuelve esto
+`LatestReleaseTag` usa `webtyp.com/git`, que **ya resuelve esto
 correctamente** y lo hace en un solo lugar del ecosistema:
 
 ```go
@@ -185,7 +185,7 @@ tag, err := g.GetLatestTag()   // "git tag -l --sort=-version:refname", primera 
 
 > ⚠️ **No escribas tu propio `git describe --tags --abbrev=0`.** Devuelve el tag
 > alcanzable más cercano desde HEAD, no el semver más alto — es un bug sutil que
-> `tinywasm/git` ya documenta y evita. Reusa la función.
+> `webtyp/git` ya documenta y evita. Reusa la función.
 
 La versión de TinyGo sale de la constante de la etapa 3, `goflare.TinyGoVersion`,
 que a su vez viene de `tinygo.DefaultVersion`. **Ninguna cifra escrita a mano.**
@@ -200,7 +200,7 @@ const (
 
 	// ReleaseAssetURLFmt arma la URL de descarga de un binario publicado.
 	// Argumentos: version, nombre del asset.
-	ReleaseAssetURLFmt = "https://github.com/tinywasm/goflare/releases/download/%s/%s"
+	ReleaseAssetURLFmt = "https://github.com/webtyp/goflare/releases/download/%s/%s"
 
 	// TinyGoCacheKeyFmt es la key de actions/cache del arbol de TinyGo. La
 	// version va DENTRO de la key a proposito: las keys de actions/cache son
@@ -220,7 +220,7 @@ la siguiente define qué produce.
 
 - `grep -rn "map\[" actiongen/` → vacío.
 - `grep -rn "gopkg.in/yaml" .` → vacío.
-- `ls actiongen/*.go | xargs grep -l "github.com/tinywasm"` → vacío (el paquete
+- `ls actiongen/*.go | xargs grep -l "github.com/webtyp"` → vacío (el paquete
   portable no importa nada del ecosistema).
 - `grep -rn "git describe" .` → vacío.
 - Llamar a `Render()` dos veces sobre el mismo `Action` produce bytes

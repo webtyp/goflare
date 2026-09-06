@@ -5,7 +5,7 @@ package goflare_test
 import (
 	"testing"
 
-	"github.com/tinywasm/goflare"
+	"webtyp.com/goflare"
 )
 
 func TestConfig_ValidateBuild(t *testing.T) {

@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinywasm/goflare"
+	"webtyp.com/goflare"
 )
 
 func TestDeploy_ConfiguresWorkerDomainWithLongestMatchingZone(t *testing.T) {

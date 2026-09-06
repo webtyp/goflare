@@ -67,7 +67,7 @@ All direct dependencies are modern and actively maintained:
 | Module | Purpose |
 |---|---|
 | `github.com/tdewolff/minify/v2` | JS/CSS minification |
-| `github.com/tinywasm/sitec` | `script.js` / `style.css` generation, and WASM compilation (`WasmBuilder`) |
+| `webtyp.com/sitec` | `script.js` / `style.css` generation, and WASM compilation (`WasmBuilder`) |
 
 **Requirements:** Go 1.25.2+.
 

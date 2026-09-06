@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/tinywasm/goflare"
+	"webtyp.com/goflare"
 )
 
 func TestGeneratePagesFiles(t *testing.T) {

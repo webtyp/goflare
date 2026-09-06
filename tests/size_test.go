@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinywasm/goflare"
+	"webtyp.com/goflare"
 )
 
 func TestMeasureWasm(t *testing.T) {

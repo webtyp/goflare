@@ -13,12 +13,12 @@ import (
 )
 
 const (
-	ImportEdge    = "github.com/tinywasm/cloudflare/edge"
-	ImportWorkers = "github.com/tinywasm/cloudflare/workers"
+	ImportEdge    = "webtyp.com/cloudflare/edge"
+	ImportWorkers = "webtyp.com/cloudflare/workers"
 
 	// LegacyImportEdge/Workers kept for backwards compat during migration.
-	LegacyImportEdge    = "github.com/tinywasm/goflare/edge"
-	LegacyImportWorkers = "github.com/tinywasm/goflare/workers"
+	LegacyImportEdge    = "webtyp.com/goflare/edge"
+	LegacyImportWorkers = "webtyp.com/goflare/workers"
 
 	ErrNoKnownImport = "cannot infer mode: edge/main.go imports neither " + ImportEdge + " nor " + ImportWorkers
 )

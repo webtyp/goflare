@@ -3,7 +3,6 @@
 package goflare_test
 
 import (
-	"fmt"
 	"net/http"
 	"os"
 	"os/exec"
@@ -12,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinywasm/goflare"
+	"webtyp.com/goflare"
 )
 
 func TestDeployVerify_Success(t *testing.T) {
@@ -197,11 +196,17 @@ func TestBuild_JSBundleMarkerReplaced(t *testing.T) {
 	os.MkdirAll(entryDir, 0755)
 
 	modBytes, _ := os.ReadFile(filepath.Join(repoRoot, "go.mod"))
-	newMod := strings.Replace(string(modBytes), "module github.com/tinywasm/goflare", "module testapp", 1)
-	newMod = strings.ReplaceAll(newMod, "github.com/tinywasm/cloudflare v0.0.2", "github.com/tinywasm/cloudflare v0.0.0")
-	cloudflareRoot := filepath.Join(filepath.Dir(repoRoot), "cloudflare")
-	if !strings.Contains(newMod, "replace github.com/tinywasm/cloudflare") {
-		newMod += fmt.Sprintf("\nreplace github.com/tinywasm/cloudflare => %s\n", cloudflareRoot)
+	newMod := strings.Replace(string(modBytes), "module webtyp.com/goflare", "module testapp", 1)
+	newMod = strings.ReplaceAll(newMod, "webtyp.com/cloudflare v0.0.2", "webtyp.com/cloudflare v0.0.0")
+	{
+		var keep []string
+		for _, ln := range strings.Split(newMod, "\n") {
+			if strings.HasPrefix(strings.TrimSpace(ln), "replace webtyp.com/") {
+				continue
+			}
+			keep = append(keep, ln)
+		}
+		newMod = strings.Join(keep, "\n") + "\n" + webtypReplaces(t)
 	}
 	os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte(newMod), 0644)
 	if sumBytes, err := os.ReadFile(filepath.Join(repoRoot, "go.sum")); err == nil {
@@ -214,7 +219,7 @@ func TestBuild_JSBundleMarkerReplaced(t *testing.T) {
 	}
 
 	mainContent := `package main
-import _ "github.com/tinywasm/cloudflare/edge"
+import _ "webtyp.com/cloudflare/edge"
 func main() {}
 `
 	os.WriteFile(filepath.Join(entryDir, "main.go"), []byte(mainContent), 0644)

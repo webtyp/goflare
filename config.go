@@ -30,7 +30,7 @@ const (
 
 // WorkerFirstRoutes are the prefixes Cloudflare must send to the Worker ahead
 // of the static assets. This is not project configuration: /api/ is the route
-// convention of tinywasm/router and /oauth/ is mounted by tinywasm/user. A
+// convention of webtyp/router and /oauth/ is mounted by webtyp/user. A
 // project using the ecosystem is correct without declaring anything.
 var WorkerFirstRoutes = []string{"/api/*", "/oauth/*"}
 

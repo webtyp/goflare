@@ -1,12 +1,12 @@
-# CI con GitHub Actions — Action `tinywasm/goflare`
+# CI con GitHub Actions — Action `webtyp/goflare`
 
-GoFlare se despliega en GitHub Actions usando la action oficial `tinywasm/goflare@v1`. No requiere instalar Node.js, Wrangler ni compilar `goflare` desde fuente.
+GoFlare se despliega en GitHub Actions usando la action oficial `webtyp/goflare@v1`. No requiere instalar Node.js, Wrangler ni compilar `goflare` desde fuente.
 
 ## Uso rápido
 
 ```yaml
 - uses: actions/checkout@v4
-- uses: tinywasm/goflare@v1
+- uses: webtyp/goflare@v1
   with:
     worker: mi-worker
     domain: mi-worker.ejemplo.cl
@@ -47,12 +47,12 @@ GoFlare se despliega en GitHub Actions usando la action oficial `tinywasm/goflar
 
 El binario de `goflare` se descarga automáticamente según las siguientes reglas:
 1. `inputs.version` si está especificado.
-2. `github.action_ref` si la action se invoca con un tag semver completo (ej: `uses: tinywasm/goflare@v0.5.22`).
+2. `github.action_ref` si la action se invoca con un tag semver completo (ej: `uses: webtyp/goflare@v0.5.22`).
 3. El tag pre-horneado en `action.yml` (ej: al usar `@v1`).
 
 ### Desfase de una versión en `@v1`
 
-En el commit del tag `vX.Y.Z`, `action.yml` hornea la versión `v(X.Y.Z-1)` (el último release cuyas descargas de binarios ya están disponibles). Esto es deliberado y previene fallos 404 durante la publicación del release. Quien requiera la versión exacta en el tag puede fijarla con `uses: tinywasm/goflare@vX.Y.Z`.
+En el commit del tag `vX.Y.Z`, `action.yml` hornea la versión `v(X.Y.Z-1)` (el último release cuyas descargas de binarios ya están disponibles). Esto es deliberado y previene fallos 404 durante la publicación del release. Quien requiera la versión exacta en el tag puede fijarla con `uses: webtyp/goflare@vX.Y.Z`.
 
 ## Compilar sin desplegar en Pull Requests
 
@@ -68,7 +68,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: tinywasm/goflare@v1
+      - uses: webtyp/goflare@v1
         with:
           worker: mi-worker
           deploy: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}

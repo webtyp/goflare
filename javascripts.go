@@ -10,7 +10,7 @@ import (
 
 	"github.com/tdewolff/minify/v2"
 	minjs "github.com/tdewolff/minify/v2/js"
-	cloudflareassets "github.com/tinywasm/cloudflare/assets"
+	cloudflareassets "webtyp.com/cloudflare/assets"
 )
 
 // generateWorkerFile bundles and minifies the three JS assets into a single edge.js.

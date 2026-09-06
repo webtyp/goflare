@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinywasm/goflare"
+	"webtyp.com/goflare"
 )
 
 func TestCompareVersions(t *testing.T) {
@@ -61,6 +61,6 @@ go 1.25.2
 	}
 
 	if ver != "" {
-		t.Errorf("expected empty version for module without tinywasm/cloudflare, got %q", ver)
+		t.Errorf("expected empty version for module without webtyp/cloudflare, got %q", ver)
 	}
 }

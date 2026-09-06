@@ -1,6 +1,6 @@
 # Cloudflare CLI (`cf`) y Local Explorer: Relevancia para GoFlare
 
-Este documento resume la información clave del anuncio oficial de Cloudflare sobre su nueva herramienta CLI unificada (`cf`) y el `Local Explorer`, analizando su relevancia y potenciales integraciones para la librería **GoFlare** (`tinywasm/goflare`).
+Este documento resume la información clave del anuncio oficial de Cloudflare sobre su nueva herramienta CLI unificada (`cf`) y el `Local Explorer`, analizando su relevancia y potenciales integraciones para la librería **GoFlare** (`webtyp/goflare`).
 
 ---
 

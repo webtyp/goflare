@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/tinywasm/goflare"
+	"webtyp.com/goflare"
 )
 
 func main() {

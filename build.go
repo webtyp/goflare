@@ -8,7 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/tinywasm/sitec"
+	"webtyp.com/sitec"
 )
 
 // Build orchestrates the build pipeline.

@@ -3,7 +3,7 @@
 package devserver
 
 import (
-	"github.com/tinywasm/server/httpd"
+	"webtyp.com/server/httpd"
 )
 
 // New returns a new development server.

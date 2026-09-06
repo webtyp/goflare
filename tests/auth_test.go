@@ -7,7 +7,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/tinywasm/goflare"
+	"webtyp.com/goflare"
 )
 
 func TestAuth_Validates(t *testing.T) {

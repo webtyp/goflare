@@ -15,21 +15,21 @@ func TestValidateEntry(t *testing.T) {
 		{
 			name: "EdgeImport",
 			mainGo: `package main
-import _ "github.com/tinywasm/goflare/edge"
+import _ "webtyp.com/goflare/edge"
 func main() {}`,
 		},
 		{
 			name: "WorkersImport",
 			mainGo: `package main
-import _ "github.com/tinywasm/goflare/workers"
+import _ "webtyp.com/goflare/workers"
 func main() {}`,
 		},
 		{
 			name: "BothImportsAllowed",
 			mainGo: `package main
 import (
-	_ "github.com/tinywasm/goflare/edge"
-	_ "github.com/tinywasm/goflare/workers"
+	_ "webtyp.com/goflare/edge"
+	_ "webtyp.com/goflare/workers"
 )
 func main() {}`,
 		},
@@ -43,7 +43,7 @@ func main() { fmt.Println("hello") }`,
 		{
 			name: "CommentedImport",
 			mainGo: `package main
-// import "github.com/tinywasm/goflare/edge"
+// import "webtyp.com/goflare/edge"
 func main() {}`,
 			wantErr: ErrNoKnownImport,
 		},

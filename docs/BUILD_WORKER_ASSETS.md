@@ -95,8 +95,8 @@ Tras completar el `PUT`, `goflare` realiza una sonda automática `GET /api/__gof
 
 > **Nota:** el JS runtime (`worker.mjs`, `runtime.mjs`, `wasm_exec_worker.js`) y el
 > Go runtime (`edge/`, `workers/`, `d1/`, `r2/`, `log/`) viven en
-> **`tinywasm/cloudflare`** — `goflare` sólo los empaqueta desde
-> `tinywasm/cloudflare/assets` (`javascripts.go`).
+> **`webtyp/cloudflare`** — `goflare` sólo los empaqueta desde
+> `webtyp/cloudflare/assets` (`javascripts.go`).
 
 La instancia de Go se crea **una vez por isolate**, no una vez por petición: la
 primera petición paga la instanciación del WASM y el `main()` completo, y todas

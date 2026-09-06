@@ -113,7 +113,7 @@ La cuenta es el contenedor de zonas y recursos, así que es el límite de aislam
 
 Receta recomendada:
 
-1. Crear una cuenta nueva (ej. `tinywasm-sandbox`) con el mismo login.
+1. Crear una cuenta nueva (ej. `webtyp-sandbox`) con el mismo login.
 2. Poner ahí los Workers/D1/R2/KV con los que el agente va a experimentar.
 3. Al autorizar el MCP, **seleccionar únicamente esa cuenta** en el consent.
    Los servidores no ven las cuentas que no elegiste.

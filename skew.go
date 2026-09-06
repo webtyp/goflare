@@ -6,19 +6,19 @@ import (
 	"fmt"
 	"runtime/debug"
 
-	"github.com/tinywasm/modfind"
+	"webtyp.com/modfind"
 )
 
 const (
 	// CloudflareModulePath is the edge runtime module. goflare embeds its JS
 	// assets; the project compiles its Go code. Both halves have to come from
 	// the same version.
-	CloudflareModulePath = "github.com/tinywasm/cloudflare"
+	CloudflareModulePath = "webtyp.com/cloudflare"
 
-	skewErrFmt = "tinywasm/cloudflare version skew: your go.mod resolves %s while this goflare binary embeds the JS assets of %s. The JavaScript glue and the Worker's Go runtime share an ABI; when they diverge, the Worker traps during package initialization without logging anything. Fix with: go get github.com/tinywasm/cloudflare@%s"
+	skewErrFmt = "webtyp/cloudflare version skew: your go.mod resolves %s while this goflare binary embeds the JS assets of %s. The JavaScript glue and the Worker's Go runtime share an ABI; when they diverge, the Worker traps during package initialization without logging anything. Fix with: go get webtyp.com/cloudflare@%s"
 )
 
-// EmbeddedCloudflareVersion returns the github.com/tinywasm/cloudflare version
+// EmbeddedCloudflareVersion returns the webtyp.com/cloudflare version
 // THIS binary was built against.
 func EmbeddedCloudflareVersion() string {
 	info, ok := debug.ReadBuildInfo()
@@ -33,7 +33,7 @@ func EmbeddedCloudflareVersion() string {
 	return ""
 }
 
-// ProjectCloudflareVersion returns the github.com/tinywasm/cloudflare version
+// ProjectCloudflareVersion returns the webtyp.com/cloudflare version
 // the project go.mod in moduleRoot resolves to.
 func ProjectCloudflareVersion(moduleRoot string) (string, error) {
 	f := modfind.New()
@@ -61,7 +61,7 @@ func CompareVersions(project, embedded string) error {
 }
 
 // CheckVersionSkew fails when the project and this binary resolve different
-// versions of tinywasm/cloudflare.
+// versions of webtyp/cloudflare.
 func CheckVersionSkew(moduleRoot string) error {
 	projVer, err := ProjectCloudflareVersion(moduleRoot)
 	if err != nil {

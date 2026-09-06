@@ -11,7 +11,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinywasm/goflare"
+	"webtyp.com/goflare"
 )
 
 // capturedMetadata parses the "metadata" multipart field of the PUT to

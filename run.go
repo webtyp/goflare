@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/tinywasm/gobuild"
+	"webtyp.com/gobuild"
 )
 
 // RunAuth runs the auth command.

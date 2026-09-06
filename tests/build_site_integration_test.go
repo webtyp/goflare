@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinywasm/goflare"
+	"webtyp.com/goflare"
 )
 
 func TestBuildSite_Integration(t *testing.T) {
@@ -47,7 +47,7 @@ func TestBuildSite_Integration(t *testing.T) {
 
 package config
 
-import "github.com/tinywasm/css"
+import "webtyp.com/css"
 
 type Panel struct{}
 

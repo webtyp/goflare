@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/tinywasm/ghaction"
-	"github.com/tinywasm/git"
+	"webtyp.com/ghaction"
+	"webtyp.com/git"
 )
 
 const (
 	ActionFilePath     = "action.yml"
-	ReleaseAssetURLFmt = "https://github.com/tinywasm/goflare/releases/download/%s/%s"
+	ReleaseAssetURLFmt = "https://github.com/webtyp/goflare/releases/download/%s/%s"
 	TinyGoCacheKeyFmt  = "tinygo-${{ runner.os }}-${{ runner.arch }}-%s"
 )
 
@@ -45,7 +45,7 @@ if [ -z "$version" ]; then
     *)
       # A floating ref such as v1 carries no release number, so ask GitHub
       # which release is current.
-      version="$(curl -fsSL https://api.github.com/repos/tinywasm/goflare/releases/latest \
+      version="$(curl -fsSL https://api.github.com/repos/webtyp/goflare/releases/latest \
         | sed -n 's/.*"tag_name": *"\([^"]*\)".*/\1/p' | head -n1)"
       ;;
   esac
@@ -65,14 +65,14 @@ case "$(uname -s)-$(uname -m)" in
   *) echo "goflare: unsupported platform: $(uname -s)-$(uname -m)" >&2; exit 1 ;;
 esac
 
-url="https://github.com/tinywasm/goflare/releases/download/${version}/${asset}"
+url="https://github.com/webtyp/goflare/releases/download/${version}/${asset}"
 dest="${RUNNER_TEMP}/goflare"
 
 if ! curl -fsSL "$url" -o "$dest"; then
   echo "goflare: no ${asset} binary in release ${version}." >&2
   echo "  URL: ${url}" >&2
   echo "  The likely cause is that gorelease never ran for that tag." >&2
-  echo "  Check https://github.com/tinywasm/goflare/releases and pin a version that does have binaries via the 'version' input." >&2
+  echo "  Check https://github.com/webtyp/goflare/releases and pin a version that does have binaries via the 'version' input." >&2
   exit 1
 fi
 
@@ -107,7 +107,7 @@ echo "version=${version}" >> "$GITHUB_OUTPUT"`
 	return ghaction.Action{
 		Name:        "Deploy with goflare",
 		Description: "Builds a Go project to WASM and deploys it as a Cloudflare Worker",
-		Author:      "tinywasm",
+		Author:      "webtyp",
 		Branding: ghaction.Branding{
 			Icon:  "upload-cloud",
 			Color: "orange",
@@ -161,7 +161,7 @@ echo "version=${version}" >> "$GITHUB_OUTPUT"`
 				ID:      "tinygo",
 				Shell:   "bash",
 				Run:     installTinyGoScript,
-				Comment: "TinyGo is installed by the goflare binary itself, via tinywasm/tinygo. Using uses: tinywasm/tinygo@v1 is deliberately avoided: that action installs the version of the ref it is invoked with, while sitec resolves it again during the build. That would be two sources, and the day they stop agreeing, sitec uninstalls what the action put there and downloads its own. With the binary as the only installer there is a single source. This step runs before the tests because some projects invoke the bare tinygo binary from PATH during go test.",
+				Comment: "TinyGo is installed by the goflare binary itself, via webtyp/tinygo. Using uses: webtyp/tinygo@v1 is deliberately avoided: that action installs the version of the ref it is invoked with, while sitec resolves it again during the build. That would be two sources, and the day they stop agreeing, sitec uninstalls what the action put there and downloads its own. With the binary as the only installer there is a single source. This step runs before the tests because some projects invoke the bare tinygo binary from PATH during go test.",
 			},
 			{
 				Name:  "go vet",

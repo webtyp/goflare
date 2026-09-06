@@ -8,9 +8,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/tinywasm/goflare/devserver"
-	"github.com/tinywasm/router"
-	"github.com/tinywasm/server/httpd"
+	"webtyp.com/goflare/devserver"
+	"webtyp.com/router"
+	"webtyp.com/server/httpd"
 )
 
 func TestDevServer(t *testing.T) {

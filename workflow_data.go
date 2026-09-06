@@ -2,7 +2,7 @@
 
 package goflare
 
-import "github.com/tinywasm/ghaction"
+import "webtyp.com/ghaction"
 
 // ReleaseWorkflow returns the typed release workflow for goflare.
 // Generated via ghaction, single source for checkout/setup-go versions (Node24).

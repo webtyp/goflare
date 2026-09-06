@@ -6,8 +6,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/tinywasm/gobuild"
-	"github.com/tinywasm/goflare"
+	"webtyp.com/gobuild"
+	"webtyp.com/goflare"
 )
 
 func TestIsStdlib(t *testing.T) {
@@ -18,7 +18,7 @@ func TestIsStdlib(t *testing.T) {
 		{"bytes", true},
 		{"crypto/sha256", true},
 		{"internal/poll", true},
-		{"github.com/tinywasm/fmt", false},
+		{"webtyp.com/fmt", false},
 		{"golang.org/x/net/html", false},
 		{"", false},
 	}
@@ -35,13 +35,13 @@ func TestFilterActionable(t *testing.T) {
 	// 1. Actionable: direct import of forbidden package by non-stdlib package
 	chain1 := gobuild.ImportChain{
 		Forbidden: "bytes",
-		Path:      []string{"github.com/tinywasm/example", "bytes"},
+		Path:      []string{"webtyp.com/example", "bytes"},
 	}
 
 	// 2. Non-actionable: forbidden package reached via another stdlib package (crypto/sha256)
 	chain2 := gobuild.ImportChain{
 		Forbidden: "bytes",
-		Path:      []string{"github.com/tinywasm/example", "crypto/sha256", "bytes"},
+		Path:      []string{"webtyp.com/example", "crypto/sha256", "bytes"},
 	}
 
 	chains := []gobuild.ImportChain{chain1, chain2}

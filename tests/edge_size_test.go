@@ -3,11 +3,11 @@
 package goflare_test
 
 import (
-	"github.com/tinywasm/goflare"
 	"io"
 	"os"
 	"os/exec"
 	"testing"
+	"webtyp.com/goflare"
 )
 
 // TestEdgeSize checks the hard Cloudflare limit (<1 MB) for .build/edge.wasm.
@@ -46,7 +46,7 @@ func TestEdgeSize(t *testing.T) {
 	}
 	defer os.RemoveAll(tmpDir)
 	mainPath := tmpDir + "/main.go"
-	if err := os.WriteFile(mainPath, []byte("package main\nimport _ \"github.com/tinywasm/cloudflare/edge\"\nfunc main(){}\n"), 0644); err != nil {
+	if err := os.WriteFile(mainPath, []byte("package main\nimport _ \"webtyp.com/cloudflare/edge\"\nfunc main(){}\n"), 0644); err != nil {
 		t.Fatalf("failed to write temporary main: %v", err)
 	}
 
@@ -56,7 +56,7 @@ func TestEdgeSize(t *testing.T) {
 	}
 	for _, args := range [][]string{
 		{"mod", "init", "edgesize"},
-		{"get", "github.com/tinywasm/cloudflare@" + cfVersion},
+		{"get", "webtyp.com/cloudflare@" + cfVersion},
 		{"mod", "tidy"},
 	} {
 		c := exec.Command("go", args...)

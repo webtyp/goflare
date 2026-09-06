@@ -7,17 +7,17 @@ import (
 	"fmt"
 	"net/http"
 
-	"github.com/tinywasm/ddl"
+	"webtyp.com/ddl"
 )
 
 // NewD1Migrator returns a ddl.Execer that runs schema migrations against a
 // D1 database from CI or a developer machine — outside a Worker, where the
-// tinywasm/cloudflare/d1.NewEdge binding does not exist.
+// webtyp/cloudflare/d1.NewEdge binding does not exist.
 //
 // It builds on CfClient rather than a second HTTP implementation: Bearer
 // auth and {success,errors,result} envelope parsing are already correct in
 // cloudflare.go's parseCFResponse. This repo is where that belongs — see
-// tinywasm/cloudflare/AGENTS.md, "no tooling code, ever, regardless of
+// webtyp/cloudflare/AGENTS.md, "no tooling code, ever, regardless of
 // build tag".
 //
 // Usage:

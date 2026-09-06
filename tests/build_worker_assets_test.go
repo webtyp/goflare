@@ -3,14 +3,13 @@
 package goflare_test
 
 import (
-	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
 
-	"github.com/tinywasm/goflare"
+	"webtyp.com/goflare"
 )
 
 func TestBuildWorkerAssets_SingleArtifact(t *testing.T) {
@@ -23,8 +22,8 @@ func TestBuildWorkerAssets_SingleArtifact(t *testing.T) {
 	repoRoot := filepath.Dir(cwd)
 
 	imports := []string{
-		`github.com/tinywasm/cloudflare/edge`,
-		`github.com/tinywasm/cloudflare/workers`,
+		`webtyp.com/cloudflare/edge`,
+		`webtyp.com/cloudflare/workers`,
 	}
 
 	for _, imp := range imports {
@@ -42,11 +41,17 @@ func TestBuildWorkerAssets_SingleArtifact(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			newMod := strings.Replace(string(modBytes), "module github.com/tinywasm/goflare", "module testapp", 1)
-			newMod = strings.ReplaceAll(newMod, "github.com/tinywasm/cloudflare v0.0.2", "github.com/tinywasm/cloudflare v0.0.0")
-			cloudflareRoot := filepath.Join(filepath.Dir(repoRoot), "cloudflare")
-			if !strings.Contains(newMod, "replace github.com/tinywasm/cloudflare") {
-				newMod += fmt.Sprintf("\nreplace github.com/tinywasm/cloudflare => %s\n", cloudflareRoot)
+			newMod := strings.Replace(string(modBytes), "module webtyp.com/goflare", "module testapp", 1)
+			newMod = strings.ReplaceAll(newMod, "webtyp.com/cloudflare v0.0.2", "webtyp.com/cloudflare v0.0.0")
+			{
+				var keep []string
+				for _, ln := range strings.Split(newMod, "\n") {
+					if strings.HasPrefix(strings.TrimSpace(ln), "replace webtyp.com/") {
+						continue
+					}
+					keep = append(keep, ln)
+				}
+				newMod = strings.Join(keep, "\n") + "\n" + webtypReplaces(t)
 			}
 			if err := os.WriteFile(filepath.Join(tmpDir, "go.mod"), []byte(newMod), 0644); err != nil {
 				t.Fatal(err)

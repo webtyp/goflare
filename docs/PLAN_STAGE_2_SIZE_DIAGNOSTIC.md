@@ -59,11 +59,11 @@ en el entorno. La tabla sale por **stderr** de TinyGo, así que captura
 no lo re-tabules.
 
 Constantes para cada literal de flag, como en
-[depguard.go de gobuild](https://github.com/tinywasm/gobuild/blob/main/depguard.go).
+[depguard.go de gobuild](https://github.com/webtyp/gobuild/blob/main/depguard.go).
 
 ### 2. Guarda de imports prohibidos
 
-`github.com/tinywasm/gobuild` **ya publica** exactamente lo que hace falta, y
+`webtyp.com/gobuild` **ya publica** exactamente lo que hace falta, y
 **nadie lo llama**. Son funciones libres exportadas — no hace falta construir un
 `GoBuild`:
 
@@ -78,7 +78,7 @@ type gobuild.ImportChain struct {
 }
 ```
 
-Añade `github.com/tinywasm/gobuild` a `go.mod` y expón:
+Añade `webtyp.com/gobuild` a `go.mod` y expón:
 
 ```go
 // ForbiddenImports devuelve solo las cadenas ACCIONABLES hacia stdlib
@@ -105,12 +105,12 @@ strings <- crypto/internal/fips140
 os      <- crypto/internal/sysrand
 ```
 
-Y **cero** paquetes `github.com/tinywasm/*` o `github.com/veltylabs/*` importan
+Y **cero** paquetes `github.com/webtyp/*` o `github.com/veltylabs/*` importan
 directamente ninguno de los prohibidos. La disciplina del ecosistema está
 intacta; lo que se ve es la consecuencia de una decisión ya tomada y
-documentada: `tinywasm/crypto` usa `crypto/*` de stdlib a propósito, porque
+documentada: `webtyp/crypto` usa `crypto/*` de stdlib a propósito, porque
 reimplementar primitivas criptográficas a mano sería más lento y menos seguro
-(ver [AGENTS.md de tinywasm/crypto](https://github.com/tinywasm/crypto/blob/main/AGENTS.md),
+(ver [AGENTS.md de webtyp/crypto](https://github.com/webtyp/crypto/blob/main/AGENTS.md),
 sección "The stdlib rule — and its one carve-out").
 
 Por eso la regla del filtro es:
@@ -161,16 +161,16 @@ Añade la entrada a `Usage()`:
 - `goflare size` sobre un proyecto con `edge/main.go` imprime una tabla con más
   de una fila de paquete (si imprime solo `(unknown)`, se coló `-no-debug`).
 - `grep -n "no-debug" diagnose.go` → vacío.
-- `grep -n "github.com/tinywasm/gobuild" go.mod` → presente.
+- `grep -n "webtyp.com/gobuild" go.mod` → presente.
 - `goflare size` sale con código **0**.
 - `gotest ./...` en verde.
 
 ## Tests — en `tests/diagnose_test.go`
 
 1. `TestIsStdlib` — tabla: `"bytes"`, `"crypto/sha256"`, `"internal/poll"` →
-   `true`; `"github.com/tinywasm/fmt"`, `"golang.org/x/net/html"` → `false`.
+   `true`; `"webtyp.com/fmt"`, `"golang.org/x/net/html"` → `false`.
 2. `TestFilterActionable` — construye a mano dos `ImportChain`: una donde el
-   prohibido lo importa `github.com/tinywasm/ejemplo` directamente (se
+   prohibido lo importa `webtyp.com/ejemplo` directamente (se
    conserva), y otra donde el camino pasa por `crypto/sha256` antes de llegar a
    `bytes` (se descarta). **No** invoques la cadena de herramientas real: este
    test debe correr sin TinyGo instalado.

@@ -5,9 +5,9 @@
 ## Por qué
 
 La action de la etapa 6 no puede correr `go run
-github.com/tinywasm/tinygo/cmd/tinygoinstall` como hacen hoy los workflows: eso
+webtyp.com/tinygo/cmd/tinygoinstall` como hacen hoy los workflows: eso
 volvería a exigir compilar desde fuente en el runner, que es justo lo que este
-plan elimina. Y tampoco debe usar `uses: tinywasm/tinygo@v1`, por un motivo que
+plan elimina. Y tampoco debe usar `uses: webtyp/tinygo@v1`, por un motivo que
 ya está documentado en
 [el workflow de misitio](https://github.com/veltylabs/misitio/blob/main/.github/workflows/deploy.yml):
 esa action instala la versión del ref con que se la invoca, mientras que `sitec`
@@ -16,7 +16,7 @@ que dejen de coincidir, `sitec` desinstala lo que puso la action y descarga lo
 suyo.
 
 Con el binario de goflare como único instalador hay **una sola fuente**: la
-versión del módulo `github.com/tinywasm/tinygo` con la que se compiló ese
+versión del módulo `webtyp.com/tinygo` con la que se compiló ese
 binario. Un binario que descargar, y nada que pueda divergir.
 
 Hay además una razón de orden: los tests de algunos proyectos invocan el binario
@@ -105,19 +105,19 @@ Añade a `Usage()`:
 ### 4. La versión por defecto, consultable sin instalar nada
 
 La etapa 5 necesita saber qué versión de TinyGo se instalará **sin ejecutar la
-instalación**, para hornearla en la key de la caché. `tinywasm/tinygo` ya
+instalación**, para hornearla en la key de la caché. `webtyp/tinygo` ya
 publica la constante:
 
 ```go
 tinygo.DefaultVersion  // "0.41.1"
 ```
 
-Re-expórtala para que el generador no tenga que importar `tinywasm/tinygo` por
+Re-expórtala para que el generador no tenga que importar `webtyp/tinygo` por
 su cuenta:
 
 ```go
 // TinyGoVersion es la version de TinyGo que este binario de goflare instalara.
-// Sale de la version del modulo github.com/tinywasm/tinygo clavada en go.mod,
+// Sale de la version del modulo webtyp.com/tinygo clavada en go.mod,
 // asi que no hay una cifra escrita a mano que pueda quedar desactualizada.
 const TinyGoVersion = tinygo.DefaultVersion
 ```

@@ -101,7 +101,7 @@ de la cuenta. Al rotar, repetir solo el paso 2.
 ## 7. Pendiente: hacerlo un comando
 
 Los pasos 2 y 3 deberían ser `goflare auth login` y `goflare auth headers`, usando
-[`tinywasm/keyring`](https://github.com/tinywasm/keyring) (`auto` elige Secret Service en
+[`webtyp/keyring`](https://github.com/webtyp/keyring) (`auto` elige Secret Service en
 Linux, Keychain en macOS y Credential Manager en Windows). Ventajas sobre el archivo:
 
 * Sin archivo de token en disco; el secreto queda cifrado por el sistema operativo.

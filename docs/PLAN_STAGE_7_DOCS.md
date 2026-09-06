@@ -12,7 +12,7 @@ Sustituye el ejemplo de CI actual por el de una línea:
 
 ```yaml
 - uses: actions/checkout@v4
-- uses: tinywasm/goflare@v1
+- uses: webtyp/goflare@v1
   with:
     worker: mi-worker
     domain: mi-worker.ejemplo.cl
@@ -115,10 +115,10 @@ su propio repo. Y una nota de que `action.yml` es generado y no se edita a mano.
 ## 7. Borra lo que quedó obsoleto
 
 - Toda mención a "Cloudflare Free limit: 1 MiB" en cualquier `.md`.
-- Toda instrucción de CI que diga `go run github.com/tinywasm/goflare/cmd/goflare`.
+- Toda instrucción de CI que diga `go run webtyp.com/goflare/cmd/goflare`.
 - Toda mención a instalar TinyGo como paso separado del workflow.
 
-`grep -rn "1 MiB\|go run github.com/tinywasm/goflare" docs/ README.md` → vacío.
+`grep -rn "1 MiB\|go run webtyp.com/goflare" docs/ README.md` → vacío.
 
 ## Criterios de aceptación
 

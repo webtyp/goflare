@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinywasm/goflare"
+	"webtyp.com/goflare"
 )
 
 func TestAssetHash_MatchesManualSHA256(t *testing.T) {

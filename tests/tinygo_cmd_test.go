@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinywasm/goflare"
+	"webtyp.com/goflare"
 )
 
 func TestTinyGoVersionIsNotEmpty(t *testing.T) {

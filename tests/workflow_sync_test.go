@@ -6,8 +6,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/tinywasm/ghaction"
-	"github.com/tinywasm/goflare"
+	"webtyp.com/ghaction"
+	"webtyp.com/goflare"
 )
 
 func TestWorkflowsAreInSync(t *testing.T) {

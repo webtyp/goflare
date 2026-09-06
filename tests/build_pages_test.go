@@ -9,8 +9,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinywasm/goflare"
-	"github.com/tinywasm/sitec"
+	"webtyp.com/goflare"
+	"webtyp.com/sitec"
 )
 
 type fakeSite struct {

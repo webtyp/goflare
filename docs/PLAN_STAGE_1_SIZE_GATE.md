@@ -190,7 +190,7 @@ Para generar archivos grandes en los tests, escribe bytes repetidos con
 
 ## Lo que NO hay que hacer en esta etapa
 
-- **No** toques `tinywasm/sitec` ni cambies los flags con que se invoca TinyGo.
+- **No** toques `webtyp/sitec` ni cambies los flags con que se invoca TinyGo.
 - **No** añadas el desglose por paquete aquí: es la etapa 2.
 - **No** apliques el gate a `client.wasm` (el frontend). El límite y el costo de
   arranque de los que habla esta etapa son del Worker. `client.wasm` lo descarga

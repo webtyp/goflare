@@ -1,4 +1,4 @@
-# Agent Guide — `tinywasm/goflare`
+# Agent Guide — `webtyp/goflare`
 
 Constraints for agents working on this library. Read this before any change.
 
@@ -10,10 +10,10 @@ Constraints for agents working on this library. Read this before any change.
 artifacts Cloudflare expects, deploys them, and provides the **edge runtime** the deployed
 code runs on.
 
-- It **implements** the routing contract `github.com/tinywasm/router` — it does **not** define
-  it. Anything shaped like a `Context`, `Router` or `HandlerFunc` belongs in `tinywasm/router`,
+- It **implements** the routing contract `webtyp.com/router` — it does **not** define
+  it. Anything shaped like a `Context`, `Router` or `HandlerFunc` belongs in `webtyp/router`,
   never here.
-- The native (`!wasm`) dev server is **not** ours: it is `github.com/tinywasm/server/httpd`,
+- The native (`!wasm`) dev server is **not** ours: it is `webtyp.com/server/httpd`,
   the ecosystem's only native implementor. Do not write a second one.
 - Business logic never lives here.
 
@@ -23,9 +23,9 @@ This is the single most important thing to get right in this repo.
 
 | Target | Packages | Runs where | Rules |
 |---|---|---|---|
-| **`wasm`** | **`tinywasm/cloudflare`** (`edge/`, `workers/`, `d1/`, `r2/`, `log/`, `env_wasm.go`) — see `tinywasm/cloudflare/AGENTS.md` for isolate lifecycle, `runtime.ticks` ABI, and shared-global constraints | **Inside the Cloudflare Worker** | **No standard library.** Use `tinywasm/fmt` instead of `errors`/`fmt`/`strconv`/`strings`. Talks to the runtime through `syscall/js`. |
+| **`wasm`** | **`webtyp/cloudflare`** (`edge/`, `workers/`, `d1/`, `r2/`, `log/`, `env_wasm.go`) — see `webtyp/cloudflare/AGENTS.md` for isolate lifecycle, `runtime.ticks` ABI, and shared-global constraints | **Inside the Cloudflare Worker** | **No standard library.** Use `webtyp/fmt` instead of `errors`/`fmt`/`strconv`/`strings`. Talks to the runtime through `syscall/js`. |
 | **`!wasm`** | `build.go`, `mode.go`, `config.go`, `cloudflare.go`, `devserver/`, `cmd/` | The developer's machine / CI | **The standard library is correct and expected here** — `net/http`, `go/parser`, `os`, `strings`. |
-| **`actiongen`** | `actiongen/` | Generator tool | **Strictly standard library only.** No ecosystem dependencies (`tinywasm/*`). Designed for extraction to its own repository. |
+| **`actiongen`** | `actiongen/` | Generator tool | **Strictly standard library only.** No ecosystem dependencies (`webtyp/*`). Designed for extraction to its own repository. |
 
 > ⚠️ `action.yml` in the root of the repository is **generated code** produced by `actiongen` and synchronized by `TestActionYmlIsInSync`. Never edit `action.yml` manually — modify `action_data.go` and run `go test ./tests/`.
 
@@ -33,7 +33,7 @@ This is the single most important thing to get right in this repo.
 > column**. Do not "fix" stdlib imports in host tooling — that code never reaches a browser or
 > a Worker, and purging it breaks the build for no reason.
 >
-> Runtime invariants (isolate lifecycle, `runtime.ticks` BigInt ABI, `context.binding` vs `globalThis`) are documented in **`tinywasm/cloudflare/AGENTS.md`** — read it before touching `javascripts.go` or any bundling logic. Do not duplicate that guidance here.
+> Runtime invariants (isolate lifecycle, `runtime.ticks` BigInt ABI, `context.binding` vs `globalThis`) are documented in **`webtyp/cloudflare/AGENTS.md`** — read it before touching `javascripts.go` or any bundling logic. Do not duplicate that guidance here.
 
 ## Testing
 
@@ -49,7 +49,7 @@ fake `context.env` and test the real code path in a browser. **Deploying is not 
 `wrangler` is reserved for a tiny smoke tier that proves the fake does not lie.
 
 ```bash
-go install github.com/tinywasm/devflow/cmd/gotest@latest
+go install webtyp.com/devflow/cmd/gotest@latest
 gotest        # never `go test` — dual WASM/stdlib, browser-driven
 ```
 

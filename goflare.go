@@ -7,7 +7,7 @@ import (
 	"runtime/debug"
 	"time"
 
-	"github.com/tinywasm/sitec"
+	"webtyp.com/sitec"
 )
 
 // HeaderIdentity is the header a goflare-deployed Worker identifies itself

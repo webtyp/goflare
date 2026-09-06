@@ -18,7 +18,7 @@ en Go, se corre `gotest ./...`, y el test lo materializa.
 ```
 name:        Deploy with goflare
 description: Compila un proyecto Go a WASM y lo despliega como Cloudflare Worker
-author:      tinywasm
+author:      webtyp
 branding:    icon "upload-cloud", color "orange"
 ```
 
@@ -94,14 +94,14 @@ case "$(uname -s)-$(uname -m)" in
   *) echo "goflare: plataforma no soportada: $(uname -s)-$(uname -m)" >&2; exit 1 ;;
 esac
 
-url="https://github.com/tinywasm/goflare/releases/download/${version}/${asset}"
+url="https://github.com/webtyp/goflare/releases/download/${version}/${asset}"
 dest="${RUNNER_TEMP}/goflare"
 
 if ! curl -fsSL "$url" -o "$dest"; then
   echo "goflare: no existe el binario ${asset} en el release ${version}." >&2
   echo "  URL: ${url}" >&2
   echo "  Lo mas probable es que gorelease no haya corrido para ese tag." >&2
-  echo "  Revisa https://github.com/tinywasm/goflare/releases y fija una version que si tenga binarios con el input 'version'." >&2
+  echo "  Revisa https://github.com/webtyp/goflare/releases y fija una version que si tenga binarios con el input 'version'." >&2
   exit 1
 fi
 
@@ -155,7 +155,7 @@ echo "version=${version}" >> "$GITHUB_OUTPUT"
 ```
 
 Comentario del paso: *TinyGo lo instala el propio binario de goflare, vía
-`tinywasm/tinygo`. A propósito **no** se usa `uses: tinywasm/tinygo@v1`: esa
+`webtyp/tinygo`. A propósito **no** se usa `uses: webtyp/tinygo@v1`: esa
 action instala la versión del ref con que se la invoca, mientras `sitec` la
 vuelve a resolver durante el build. Serían dos fuentes, y el día que dejen de
 coincidir, `sitec` desinstala lo que puso la action y descarga lo suyo. Con el
@@ -187,7 +187,7 @@ build.
 Archivo nuevo: **`.github/workflows/action.yml`**.
 
 Copia el patrón de
-[tinywasm/tinygo](https://github.com/tinywasm/tinygo/blob/main/.github/workflows/action.yml):
+[webtyp/tinygo](https://github.com/webtyp/tinygo/blob/main/.github/workflows/action.yml):
 consumir la action con `uses: ./`, de modo que lo que corre es el árbol de
 trabajo de ese commit y **un `action.yml` roto rompe el PR que lo introdujo**,
 no el despliegue del primer usuario que la fije.
@@ -236,7 +236,7 @@ jobs:
 > mecánica de la action, no un despliegue.
 
 El proyecto de prueba: crea `tests/fixture/` con un `edge/main.go` mínimo que
-importe `github.com/tinywasm/cloudflare/edge` y sirva una ruta. Si montar el
+importe `webtyp.com/cloudflare/edge` y sirva una ruta. Si montar el
 fixture resulta ser más trabajo del previsto, **reduce el job a correr solo el
 test de sincronización y déjalo anotado en el PR** — el test de sincronización
 es el que protege contra el fallo silencioso; el fixture es un extra.
@@ -247,7 +247,7 @@ es el que protege contra el fallo silencioso; el fixture es un extra.
 
 Archivo nuevo: **`.github/workflows/release.yml`**.
 
-Éste es el que arregla el fallo en vivo: hoy `tinywasm/goflare-demo` descarga
+Éste es el que arregla el fallo en vivo: hoy `webtyp/goflare-demo` descarga
 `…/download/v0.5.22/goflare-linux-amd64` y recibe **HTTP 404**, porque nadie
 corrió `gorelease` desde `v0.5.13`.
 
@@ -277,16 +277,16 @@ jobs:
 
       # gorelease compila cmd/ para linux, darwin y windows, genera
       # checksums.txt y sube todo como assets del release del tag.
-      # Ver https://github.com/tinywasm/devflow/blob/main/docs/GORELEASE.md
+      # Ver https://github.com/webtyp/devflow/blob/main/docs/GORELEASE.md
       - name: gorelease
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
-          go run github.com/tinywasm/devflow/cmd/gorelease@latest "${GITHUB_REF_NAME}"
+          go run webtyp.com/devflow/cmd/gorelease@latest "${GITHUB_REF_NAME}"
 
       # Mueve el tag movil v1 al commit recien publicado, para que
-      # uses: tinywasm/goflare@v1 siga a la ultima linea v0.x.
+      # uses: webtyp/goflare@v1 siga a la ultima linea v0.x.
       - name: mover el tag v1
         run: |
           set -euo pipefail
@@ -300,10 +300,10 @@ En el commit del tag `vX.Y.Z`, `action.yml` tiene horneado `v(X.Y.Z-1)`: el
 generador lee el tag más alto que existía **cuando corrió el test**, y ese tag
 es el del release anterior.
 
-Consecuencia: `uses: tinywasm/goflare@v1` descarga el binario de la penúltima
+Consecuencia: `uses: webtyp/goflare@v1` descarga el binario de la penúltima
 versión. **Es deliberado y es la opción segura** — `@v1` nunca puede apuntar a
 un release cuyos binarios todavía se estén subiendo. Quien necesite la última,
-la fija: `uses: tinywasm/goflare@vX.Y.Z`, y ahí `github.action_ref` gana y
+la fija: `uses: webtyp/goflare@vX.Y.Z`, y ahí `github.action_ref` gana y
 descarga esa exacta.
 
 **No** intentes cerrar el desfase haciendo que el workflow de release commitee
@@ -318,16 +318,16 @@ sobre la misma rama.
   `# ARCHIVO GENERADO — no lo edites a mano.`
 - `grep -c "__GOFLARE_VERSION__\|__TINYGO_VERSION__" action.yml` → `0` (los
   marcadores están sustituidos por valores reales).
-- `grep -n "go run github.com/tinywasm/goflare" action.yml` → vacío (nada de
+- `grep -n "go run webtyp.com/goflare" action.yml` → vacío (nada de
   compilar desde fuente en el runner).
-- `grep -n "tinywasm/tinygo@" action.yml` → vacío.
+- `grep -n "webtyp/tinygo@" action.yml` → vacío.
 - El job `consume` pasa en un PR.
 - `gotest ./...` en verde.
 
 ## Lo que NO hay que hacer
 
 - **No** migres los workflows de `veltylabs/iam`, `veltylabs/misitio` ni
-  `tinywasm/goflare-demo`. Están en otros repos y tienen sus propios planes.
+  `webtyp/goflare-demo`. Están en otros repos y tienen sus propios planes.
 - **No** añadas soporte de Cloudflare Pages ni de `wrangler`. Pages se está
   deprecando y queremos una sola forma de desplegar.
 - **No** publiques la action en el GitHub Marketplace. Eso es un paso manual con

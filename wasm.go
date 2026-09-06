@@ -9,7 +9,7 @@ import (
 	"os/exec"
 	"path/filepath"
 
-	"github.com/tinywasm/tinygo"
+	"webtyp.com/tinygo"
 )
 
 func (g *Goflare) generateWasmFile() error {

@@ -6,9 +6,9 @@
 
 goflare empaqueta el pegamento JavaScript del Worker: `wasm_exec_worker.js`,
 `worker.mjs` y `runtime.mjs`, que desde el split vienen embebidos de
-`github.com/tinywasm/cloudflare/assets` y llegan al binario **en la versión con
+`webtyp.com/cloudflare/assets` y llegan al binario **en la versión con
 que se compiló goflare**. El proyecto, en cambio, importa
-`github.com/tinywasm/cloudflare/edge` en la versión que declare **su propio
+`webtyp.com/cloudflare/edge` en la versión que declare **su propio
 `go.mod`**.
 
 Mientras goflare se ejecutaba con `go run` desde el `go.mod` del proyecto, las
@@ -23,7 +23,7 @@ sin un solo mensaje de error. Costó horas de diagnóstico. Una divergencia de
 versiones entre el JS embebido y el Go compilado reproduce exactamente esa clase
 de fallo, y el binario descargado la vuelve fácil de provocar.
 
-La divergencia **ya existe**: `veltylabs/iam` clava `github.com/tinywasm/cloudflare v0.0.4`
+La divergencia **ya existe**: `veltylabs/iam` clava `webtyp.com/cloudflare v0.0.4`
 mientras la última publicada es `v0.0.9`.
 
 ## Lo que hay que construir
@@ -35,7 +35,7 @@ Un archivo nuevo **`skew.go`** (`//go:build !wasm`).
 `runtime/debug` la publica sin necesidad de generar código:
 
 ```go
-// EmbeddedCloudflareVersion devuelve la version de github.com/tinywasm/cloudflare
+// EmbeddedCloudflareVersion devuelve la version de webtyp.com/cloudflare
 // con la que se compilo ESTE binario, que es la de los assets JS que lleva
 // embebidos. Cadena vacia si la informacion de build no esta disponible (por
 // ejemplo bajo `go test`, donde el modulo principal no es goflare).
@@ -49,13 +49,13 @@ Implementación: `debug.ReadBuildInfo()`, recorrer `info.Deps` buscando
 // CloudflareModulePath es el modulo del runtime del edge. goflare embebe sus
 // assets JS; el proyecto compila su codigo Go. Las dos mitades tienen que venir
 // de la misma version.
-const CloudflareModulePath = "github.com/tinywasm/cloudflare"
+const CloudflareModulePath = "webtyp.com/cloudflare"
 ```
 
 ### 2. La versión que usa el proyecto
 
 **No parsees `go.mod` a mano y no escribas otro bucle de `go list -m`.**
-`github.com/tinywasm/modfind` centraliza justo eso, ya está en el `go.mod` de
+`webtyp.com/modfind` centraliza justo eso, ya está en el `go.mod` de
 este repo (hoy como `// indirect`; pásalo a directo) y cachea el resultado:
 
 ```go
@@ -65,7 +65,7 @@ mods, err := f.Discover(moduleRoot)   // []modfind.Module
 ```
 
 ```go
-// ProjectCloudflareVersion devuelve la version de github.com/tinywasm/cloudflare
+// ProjectCloudflareVersion devuelve la version de webtyp.com/cloudflare
 // que resuelve el go.mod del proyecto en moduleRoot. Cadena vacia si el
 // proyecto no depende del runtime del edge, que es legitimo: un sitio de solo
 // assets estaticos no lo necesita.
@@ -76,7 +76,7 @@ func ProjectCloudflareVersion(moduleRoot string) (string, error)
 
 ```go
 // CheckVersionSkew falla si el proyecto y este binario resuelven versiones
-// distintas de tinywasm/cloudflare. No hacerlo deja que el pegamento JS
+// distintas de webtyp/cloudflare. No hacerlo deja que el pegamento JS
 // embebido y el runtime Go compilado se desincronicen, y esa clase de fallo se
 // manifiesta como un Worker que aborta durante la inicializacion de paquetes,
 // sin mensaje.
@@ -95,7 +95,7 @@ Tabla de decisión — impleméntala tal cual:
 El error, textualmente:
 
 ```
-desajuste de versiones de tinywasm/cloudflare: tu go.mod resuelve v0.0.4 y este binario de goflare lleva embebidos los assets JS de v0.0.9. El pegamento JavaScript y el runtime Go del Worker comparten una ABI; si divergen, el Worker aborta al inicializar paquetes sin dejar mensaje. Corrige con: go get github.com/tinywasm/cloudflare@v0.0.9
+desajuste de versiones de webtyp/cloudflare: tu go.mod resuelve v0.0.4 y este binario de goflare lleva embebidos los assets JS de v0.0.9. El pegamento JavaScript y el runtime Go del Worker comparten una ABI; si divergen, el Worker aborta al inicializar paquetes sin dejar mensaje. Corrige con: go get webtyp.com/cloudflare@v0.0.9
 ```
 
 Las dos versiones y el `go get` sugerido salen de variables, no de literales:
@@ -115,9 +115,9 @@ ahí estorbaría sin proteger nada: el artefacto no sale de la máquina.
 
 - `grep -rn "go list -m" .` → vacío (nada de bucles propios; todo va por
   `modfind`).
-- `grep -n "github.com/tinywasm/modfind" go.mod` → aparece como dependencia
+- `grep -n "webtyp.com/modfind" go.mod` → aparece como dependencia
   **directa**, sin el comentario `// indirect`.
-- `grep -rn "\"github.com/tinywasm/cloudflare\"" . | grep -v _test` → solo la
+- `grep -rn "\"webtyp.com/cloudflare\"" . | grep -v _test` → solo la
   constante `CloudflareModulePath`.
 - Un `goflare deploy` en un proyecto sin desajuste no imprime nada nuevo.
 - `gotest ./...` en verde.
@@ -138,11 +138,11 @@ func compareVersions(project, embedded string) error
    `("v0.0.4", "")` → nil; `("v0.0.9", "v0.0.9")` → nil; `("v0.0.4", "v0.0.9")`
    → error cuyo texto contiene ambas versiones y la cadena `go get`.
 2. `TestProjectCloudflareVersionAbsent` — un directorio temporal con un `go.mod`
-   mínimo que no requiere `tinywasm/cloudflare`; devuelve cadena vacía y `nil`,
+   mínimo que no requiere `webtyp/cloudflare`; devuelve cadena vacía y `nil`,
    **no** un error.
 
 > ⚠️ **Anti-footgun.** No hagas que la comprobación exija igualdad exacta de
 > tags para el caso `replace`. Si el proyecto tiene un `replace` local hacia
-> `tinywasm/cloudflare`, `modfind` reporta `Version` vacía y la primera fila de
+> `webtyp/cloudflare`, `modfind` reporta `Version` vacía y la primera fila de
 > la tabla ya lo deja pasar. Un desarrollador con un `replace` local está
 > probando a propósito y no debe ser bloqueado.

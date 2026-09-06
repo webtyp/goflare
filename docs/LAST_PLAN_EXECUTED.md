@@ -6,7 +6,7 @@ REVIEWER: none
 
 > This plan is dispatched via the CodeJob workflow. See skill: agents-workflow.
 
-# Plan — `tinywasm/goflare`: fix "Main module must be an ES module" on `goflare deploy`
+# Plan — `webtyp/goflare`: fix "Main module must be an ES module" on `goflare deploy`
 
 ## The problem, in one line
 

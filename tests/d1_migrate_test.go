@@ -9,10 +9,10 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tinywasm/ddl"
-	"github.com/tinywasm/goflare"
-	"github.com/tinywasm/model"
-	"github.com/tinywasm/sqlt"
+	"webtyp.com/ddl"
+	"webtyp.com/goflare"
+	"webtyp.com/model"
+	"webtyp.com/sqlt"
 )
 
 type d1MigrateMockModel struct {
