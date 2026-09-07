@@ -2,8 +2,9 @@
 PLAN: "fix!: derive run_worker_first from the project's declared routes"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 1792881506691849070
+PR: https://github.com/webtyp/goflare/pull/27
 ---
 
 > This plan is dispatched via the CodeJob workflow. See skill: agents-workflow.
