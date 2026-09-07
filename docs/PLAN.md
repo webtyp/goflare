@@ -2,6 +2,8 @@
 PLAN: "fix!: derive run_worker_first from the project's declared routes"
 EXECUTOR: jules
 REVIEWER: none
+STATUS: running
+SESSION: 1792881506691849070
 ---
 
 > This plan is dispatched via the CodeJob workflow. See skill: agents-workflow.
