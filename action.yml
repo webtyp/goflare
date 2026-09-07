@@ -95,7 +95,7 @@ runs:
         # Last resort only. This literal is baked at generation time, so it can never
         # name the tag being released right now.
         if [ -z "$version" ]; then
-          version="v0.5.29"
+          version="v0.5.30"
         fi
 
         case "$(uname -s)-$(uname -m)" in
