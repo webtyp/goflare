@@ -43,7 +43,7 @@ El despliegue combina la API Direct Upload de Assets de Cloudflare Workers con e
     "config": {
       "html_handling": "auto-trailing-slash",
       "not_found_handling": "single-page-application",
-      "run_worker_first": ["/api/*", "/oauth/*"]
+      "run_worker_first": ["/api/contacto", "/static*"]
     }
   },
   "bindings": []
@@ -67,13 +67,32 @@ nombre de campo:
 
 ---
 
-## Enrutamiento y `WorkerFirstRoutes`
+## Enrutamiento y `run_worker_first`
 
-Por defecto, los assets estáticos tienen prioridad sobre el Worker. Con `not_found_handling: "single-page-application"`, cualquier ruta que no coincida con un archivo estático devolverá `index.html` con estado `200`.
+Por defecto los assets estáticos tienen prioridad sobre el Worker. Con
+`not_found_handling: "single-page-application"`, cualquier petición que no
+coincida con un archivo estático devuelve `index.html` con estado **`200`** —
+sin registrar nada. Si esa petición era una ruta dinámica, el Worker nunca se
+ejecuta y el llamador recibe una página en vez de su respuesta.
 
-Para asegurar que las peticiones API lleguen al Worker, `goflare` envía `run_worker_first: ["/api/*", "/oauth/*"]`.
+Para evitarlo, `goflare` deriva `run_worker_first` de **las rutas que el
+proyecto declara** en `routes/routes.go`, leídas en tiempo de build con
+`webtyp.com/router/routescan`:
 
-> *Si una ruta de tu aplicación devuelve el HTML del sitio en vez de su respuesta, está fuera de los prefijos de `WorkerFirstRoutes`.*
+- Cada ruta declarada produce una entrada, en orden de aparición, sin
+  duplicados.
+- Una ruta con un segmento `{param}` se recorta en ese segmento y se le añade
+  `*` (`/api/orders/{id}` → `/api/orders/*`).
+- Un `Mount` o un `PublicDir` ya llegan como prefijo (`/api/auth*`,
+  `/static*`) y se usan tal cual.
+- Un proyecto **sin `routes/routes.go` no declara rutas dinámicas**: la lista va
+  vacía. No se envían prefijos adivinados.
+- Si `routes/routes.go` no se puede leer (una ruta que no es literal ni const
+  del mismo archivo), el deploy **falla**: no hay lista por defecto.
+
+> *Si una ruta de tu aplicación devuelve el HTML del sitio en vez de su
+> respuesta, falta en `routes/routes.go` — declárala ahí y el deploy la
+> incluirá en `run_worker_first`.*
 
 ---
 

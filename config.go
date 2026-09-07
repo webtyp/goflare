@@ -8,6 +8,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"webtyp.com/router/routescan"
 )
 
 const (
@@ -28,11 +30,14 @@ const (
 	HTMLHandlingDefault      = "auto-trailing-slash"
 )
 
-// WorkerFirstRoutes are the prefixes Cloudflare must send to the Worker ahead
-// of the static assets. This is not project configuration: /api/ is the route
-// convention of webtyp/router and /oauth/ is mounted by webtyp/user. A
-// project using the ecosystem is correct without declaring anything.
-var WorkerFirstRoutes = []string{"/api/*", "/oauth/*"}
+// DefaultRootDir is the project root Scan reads routes/routes.go from when the
+// caller leaves Config.RootDir empty. It is a convention, not a .env key.
+const DefaultRootDir = "."
+
+// symbolRouteParam marks a parameterised segment in a declared route path
+// ("/api/orders/{id}"). Everything from that segment on is variable, so the
+// prefix Cloudflare is given stops before it.
+const symbolRouteParam = "{"
 
 // LoadConfigFromEnv reads a .env file and populates Config.
 // Falls back to OS environment variables if .env path is empty or does not exist.
@@ -151,6 +156,9 @@ func (c *Config) applyDefaults() {
 	if c.WorkerName == "" && c.ProjectName != "" {
 		c.WorkerName = c.ProjectName + "-worker"
 	}
+	if c.RootDir == "" {
+		c.RootDir = DefaultRootDir
+	}
 	if c.OutputDir == "" {
 		c.OutputDir = ".build/"
 	}
@@ -185,4 +193,40 @@ func (g *Goflare) notFoundHandling() string {
 		return v
 	}
 	return DefaultNotFoundHandling
+}
+
+// workerFirstRoutes returns the path prefixes Cloudflare must route to the
+// Worker before the static assets, derived from the routes the project declares
+// in routes/routes.go — never guessed.
+//
+// Each declaration becomes one entry: a Mount or PublicDir path already carries
+// routescan.MountSuffix and is used as-is; a path with a "{param}" segment is
+// truncated at that segment and suffixed with routescan.MountSuffix
+// ("/api/orders/{id}" -> "/api/orders/*"); any other path is used verbatim.
+// Duplicates are removed; order is source order.
+//
+// A project with no routes/routes.go declares no dynamic paths and gets an
+// empty slice — not the two prefixes the old hardcoded default guessed, which
+// is the silent-unreachable-route bug this replaced. A scan error is returned
+// to the caller so the deploy fails; there is no fallback list.
+func (g *Goflare) workerFirstRoutes() ([]string, error) {
+	decls, err := routescan.Scan(g.Config.RootDir)
+	if err != nil {
+		return nil, err
+	}
+
+	out := make([]string, 0, len(decls))
+	seen := make(map[string]bool, len(decls))
+	for _, d := range decls {
+		prefix := d.Path
+		if i := strings.Index(prefix, symbolRouteParam); i >= 0 {
+			prefix = prefix[:i] + routescan.MountSuffix
+		}
+		if prefix == "" || seen[prefix] {
+			continue
+		}
+		seen[prefix] = true
+		out = append(out, prefix)
+	}
+	return out, nil
 }
