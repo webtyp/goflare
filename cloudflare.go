@@ -202,12 +202,16 @@ func (g *Goflare) Deploy() error {
 	}
 
 	if hasAssets {
+		workerFirst, err := g.workerFirstRoutes()
+		if err != nil {
+			return err
+		}
 		metadata["assets"] = map[string]any{
 			"jwt": completionToken,
 			"config": map[string]any{
 				"html_handling":      HTMLHandlingDefault,
 				"not_found_handling": g.notFoundHandling(),
-				"run_worker_first":   WorkerFirstRoutes,
+				"run_worker_first":   workerFirst,
 			},
 		}
 	}

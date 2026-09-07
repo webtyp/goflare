@@ -107,6 +107,62 @@ func TestDeploy_AssetsOnly_NoMainModuleNoScriptPart(t *testing.T) {
 	}
 }
 
+// A routes/routes.go that routescan cannot read (a variable path) fails the
+// deploy before any script PUT: the metadata's run_worker_first is derived from
+// that file, and a silent fallback would reintroduce the unreachable-route bug.
+func TestDeploy_RouteScanErrorFailsDeployAndSendsNoScript(t *testing.T) {
+	withCloudflareToken(t)
+	env := newTestEnv(t) // PublicDir has index.html => hasAssets is true
+	env.writeOutput("edge.js", "console.log('edge')")
+	env.writeOutput("edge.wasm", "wasm-bytes")
+
+	routesDir := filepath.Join(env.Root, "routes")
+	os.MkdirAll(routesDir, 0o755)
+	os.WriteFile(filepath.Join(routesDir, "routes.go"), []byte(`package routes
+
+import "webtyp.com/router"
+
+func Register(r router.Router) {
+	p := "/dynamic"
+	r.Get(p, h)
+}
+`), 0o644)
+
+	scriptPutCalled := false
+	server := MockHTTPServer(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		switch {
+		case strings.Contains(r.URL.Path, "/assets-upload-session"):
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"success":true,"result":{"jwt":"session-jwt","buckets":[]}}`))
+		case strings.Contains(r.URL.Path, "/workers/assets/upload"):
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"success":true,"result":{"jwt":"completion-jwt"}}`))
+		case r.Method == http.MethodPut && strings.Contains(r.URL.Path, "/workers/scripts/"):
+			scriptPutCalled = true
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"success":true,"result":{}}`))
+		default:
+			w.WriteHeader(http.StatusNotFound)
+		}
+	})
+	defer server.Close()
+
+	g := goflare.New(&goflare.Config{
+		AccountID: "acc-123", WorkerName: "my-worker",
+		PublicDir: env.PublicDir, OutputDir: env.OutputDir,
+		RootDir: env.Root,
+	})
+	g.BaseURL = server.URL
+
+	if err := g.Deploy(); err == nil {
+		t.Fatal("expected Deploy to fail on an unreadable routes/routes.go, got nil")
+	}
+	if scriptPutCalled {
+		t.Error("expected no script PUT once the route scan failed")
+	}
+}
+
 func TestDeploy_ScriptOnly_NoAssetsKeyNoUploadSession(t *testing.T) {
 	withCloudflareToken(t)
 	env := newTestEnv(t)
@@ -325,9 +381,11 @@ func TestDeploy_Both_ThreePhasesInOrderWithFullMetadataAndBindings(t *testing.T)
 	if !ok {
 		t.Fatalf("expected assets.config to be an object, got: %v", assets["config"])
 	}
+	// This fixture declares no routes/routes.go, so run_worker_first is empty:
+	// the derivation reads the project's declared routes, it does not guess.
 	runWorkerFirst, ok := config["run_worker_first"].([]any)
-	if !ok || len(runWorkerFirst) != 2 || runWorkerFirst[0] != "/api/*" || runWorkerFirst[1] != "/oauth/*" {
-		t.Errorf("expected run_worker_first = [/api/* /oauth/*], got: %v", config["run_worker_first"])
+	if !ok || len(runWorkerFirst) != 0 {
+		t.Errorf("expected run_worker_first = [], got: %v", config["run_worker_first"])
 	}
 
 	bindings, ok := captured.metadata["bindings"].([]any)

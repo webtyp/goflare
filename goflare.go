@@ -57,6 +57,7 @@ type Config struct {
 	// Build inputs (conventions, not configurable via .env)
 	Entry     string // ENTRY      (path to main Go file, empty = Pages only)
 	PublicDir string // PUBLIC_DIR (path to static assets, empty = Worker only)
+	RootDir   string // project root used to locate routes/routes.go; default "."
 
 	// Build output (not in .env — always .build/)
 	OutputDir string // default: ".build/"
