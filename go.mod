@@ -39,7 +39,7 @@ require (
 require (
 	github.com/tdewolff/parse/v2 v2.8.11 // indirect
 	webtyp.com/context v0.0.23 // indirect
-	webtyp.com/css v0.4.21 // indirect
+	webtyp.com/css v0.4.22 // indirect
 	webtyp.com/dom v0.13.12 // indirect
 	webtyp.com/fetch v0.1.28 // indirect
 	webtyp.com/html v0.0.21 // indirect
