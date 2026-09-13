@@ -42,7 +42,7 @@ require (
 	webtyp.com/css v0.4.22 // indirect
 	webtyp.com/dom v0.13.16 // indirect
 	webtyp.com/fetch v0.1.28 // indirect
-	webtyp.com/html v0.0.21 // indirect
+	webtyp.com/html v0.0.24 // indirect
 	webtyp.com/json v0.5.26 // indirect
 	webtyp.com/model v0.1.9
 	webtyp.com/router v0.1.38
