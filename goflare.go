@@ -37,8 +37,15 @@ type SiteOutput interface {
 type SiteBuilder func(cfg sitec.BuildConfig) (SiteOutput, error)
 
 // buildSite is the real implementation: the full sitec pipeline.
+//
+// BuildWithConfig, not Build: sitec v0.2.26 renamed the old in-memory
+// Build(cfg BuildConfig) (*Output, error) to BuildWithConfig and gave Build a
+// new, incompatible signature — a one-shot disk-writing entry point for
+// release pipelines (Build(rootDir, outDir string, opts...) error). This repo
+// wants the in-memory *Output SiteBuilder's own signature already returns, so
+// it stays on the renamed function.
 func buildSite(cfg sitec.BuildConfig) (SiteOutput, error) {
-	out, err := sitec.Build(cfg)
+	out, err := sitec.BuildWithConfig(cfg)
 	if err != nil {
 		return nil, err
 	}
