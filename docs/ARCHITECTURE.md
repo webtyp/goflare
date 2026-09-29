@@ -33,8 +33,10 @@ GoFlare is a Go library and CLI that bridges the gap between Go source code and 
 - **Stdlib Parser:** Loads settings from `.env` using standard library scanners.
 - **Single Source of Truth:** Library callers use the struct directly; CLI users use `.env` / environment variables.
 
-### 2. Storage (`store.go`)
-- **Memory Store:** An exported `MemoryStore` is provided for testing and library consumers. Local keyring management has been removed in favor of platform-based secrets (CI/CD).
+### 2. Storage
+- **None.** goflare keeps no state of its own: secrets come from the platform (CI/CD) and the
+  environment. The former `Store`/`MemoryStore` (left over from local keyring management) had no
+  caller and was removed; a key-value store, when one is needed, is `webtyp.com/kvdb`.
 
 ### 3. Build Pipeline (`build.go`, `mode.go`, `javascripts.go`, `wasm.go`)
 - **Entry Validation (`mode.go`):** `validateEntry()` verifies `edge/main.go` imports `webtyp/cloudflare/edge` or `webtyp/cloudflare/workers` (legacy `webtyp/goflare/edge` aceptado durante migración).

@@ -42,7 +42,6 @@
 | `javascripts.go` | Worker JS bundling, minification | ✅ Complete |
 | `build.go` | Build orchestration (Worker + Pages) | ✅ Complete |
 | `auth.go` | Token validation from environment | ✅ Complete |
-| `store.go` | `Store` interface and `MemoryStore` for tests | ✅ Complete |
 
 ### `/workers/` Module (WASM only)
 
