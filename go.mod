@@ -4,7 +4,7 @@ go 1.25.2
 
 require (
 	github.com/tdewolff/minify/v2 v2.24.12
-	webtyp.com/cloudflare v0.0.18
+	webtyp.com/cloudflare v0.0.32
 	webtyp.com/ddl v0.0.15
 	webtyp.com/ghaction v0.1.2
 	webtyp.com/git v0.0.8

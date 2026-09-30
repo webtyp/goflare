@@ -29,8 +29,8 @@ gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8
 gopkg.in/yaml.v1 v1.0.0-20140924161607-9f9df34309c0/go.mod h1:WDnlLJ4WF5VGsH/HVa3CI79GS0ol3YnhVnKP89i0kNg=
 howett.net/plist v1.0.0 h1:7CrbWYbPPO/PyNy38b2EB/+gYbjCe2DXBxgtOOZbSQM=
 howett.net/plist v1.0.0/go.mod h1:lqaXoTrLY4hg8tnEzNru53gicrbv7rrk+2xJA/7hw9g=
-webtyp.com/cloudflare v0.0.18 h1:3uXcfmXfmN+QlBrN4umAol8lypsPrMPSgT/L4/rJVG0=
-webtyp.com/cloudflare v0.0.18/go.mod h1:dYmGNJvfVKmTgZ/tEsU0SxH08E1N9om9WtBWPwlQJLs=
+webtyp.com/cloudflare v0.0.32 h1:I//bKNviLFEF7JuU8v8mtgPwo36M9BEWGBLFy3HZHXc=
+webtyp.com/cloudflare v0.0.32/go.mod h1:Vb/3kxqdgu/UD94mabY6nnw+b4JmQjwhvMOBq7rAnJk=
 webtyp.com/color v0.1.2 h1:PN2vx9jtlwFsu2juQoaj0GEJMY/ex3fQDcop20V8+ik=
 webtyp.com/color v0.1.2/go.mod h1:p5n4e0KRiPavkkQajtQKoMAU7C+1yx86AZlzMWTJhC8=
 webtyp.com/command v0.0.4 h1:9pHoDJ4rc1H+WJuElfhv2AC287dTjB5d5eTenMUrlWM=
