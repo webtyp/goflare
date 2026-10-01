@@ -10,6 +10,8 @@
 
 See [BUILD_WORKER_ASSETS.md](docs/BUILD_WORKER_ASSETS.md).
 
+Static assets with a content-hashed name automatically receive an `immutable` Cache-Control header via Cloudflare's `_headers` policy generated from `pwa.CacheControl`'s rule; `/artifacts/` is refused until R2 serving exists (D-PWA-16).
+
 ## Project layout
 
 ```

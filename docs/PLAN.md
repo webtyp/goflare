@@ -114,3 +114,6 @@ until R2 serving exists (D-PWA-16).
 | 3 | `tests/devserver_test.go`, `go.mod` | dev server test green |
 | 4 | tests | table green |
 | 5 | `README.md`, `docs/ARCHITECTURE.md` | written |
+
+## Executor notes
+- Wrangler uses the exact `_headers` key inside `assets.config` for static asset configuration, verified against `packages/wrangler/src/api/pages/deploy.ts` and `assets.test.ts`. I applied the config payload accurately to the Cloudflare deploy workflow matching Wrangler's implementation.

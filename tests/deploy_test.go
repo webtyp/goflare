@@ -413,3 +413,49 @@ func TestDeploy_Both_ThreePhasesInOrderWithFullMetadataAndBindings(t *testing.T)
 		t.Errorf("expected phase 2 to authenticate with the phase-1 jwt, got %q", phase2Auth)
 	}
 }
+
+func TestDeploy_SendsHeadersInAssetsConfig(t *testing.T) {
+	withCloudflareToken(t)
+	env := newTestEnv(t)
+	env.writeOutput("edge.js", "console.log('edge')")
+	env.writeOutput("edge.wasm", "wasm-bytes")
+	env.writePublic("style.3f9a1c2b.css", "body{}")
+
+	var captured capturedMetadata
+	server := MockHTTPServer(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if strings.Contains(r.URL.Path, "/assets-upload-session") {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(fmt.Sprintf(`{"success":true,"result":{"jwt":"session","buckets":[["%s"]]}}`, goflare.ExportAssetHash([]byte("body{}"), "css"))))
+		} else if strings.Contains(r.URL.Path, "/workers/assets/upload") {
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"success":true,"result":{"jwt":"completion-jwt"}}`))
+		} else if r.Method == http.MethodPut && strings.Contains(r.URL.Path, "/workers/scripts/") {
+			captured = captureDeployPUT(t, r)
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"success":true,"result":{}}`))
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+		}
+	})
+	defer server.Close()
+
+	g := goflare.New(&goflare.Config{AccountID: "acc-123", WorkerName: "my-worker", PublicDir: env.PublicDir, OutputDir: env.OutputDir})
+	g.BaseURL = server.URL
+	if err := g.Deploy(); err != nil {
+		t.Fatalf("Deploy failed: %v", err)
+	}
+
+	assets, ok := captured.metadata["assets"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected metadata.assets to be a map, got %T", captured.metadata["assets"])
+	}
+	config, ok := assets["config"].(map[string]any)
+	if !ok {
+		t.Fatalf("expected assets.config to be a map, got %T", assets["config"])
+	}
+	headers, ok := config["_headers"].(string)
+	if !ok || !strings.Contains(headers, "/style.3f9a1c2b.css") || !strings.Contains(headers, "immutable") {
+		t.Errorf("expected _headers to contain style and immutable, got %v", headers)
+	}
+}

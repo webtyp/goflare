@@ -5,6 +5,8 @@ package goflare
 import (
 	"bytes"
 	"crypto/sha256"
+	"sort"
+	"webtyp.com/pwa"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -20,6 +22,44 @@ import (
 type assetEntry struct {
 	Hash string `json:"hash"`
 	Size int    `json:"size"`
+}
+
+// headersRules returns the _headers text Cloudflare applies to static assets: one rule per
+// content-hashed file (pwa.IsHashedName), with pwa.CacheImmutable. Fixed names keep
+// Cloudflare's default (revalidate with ETag), which is what pwa.CacheRevalidate asks for.
+// Paths are sorted so the text is deterministic.
+func headersRules(manifest map[string]assetEntry) (string, error) {
+	var paths []string
+	for p := range manifest {
+		if pwa.IsHashedName(p) {
+			paths = append(paths, p)
+		}
+	}
+	if len(paths) > 100 {
+		return "", fmt.Errorf("goflare: %d content-hashed files exceed the 100 rules of _headers", len(paths))
+	}
+	if len(paths) == 0 {
+		return "", nil
+	}
+	sort.Strings(paths)
+
+	var sb strings.Builder
+	for _, p := range paths {
+		sb.WriteString(p)
+		sb.WriteString("\n  Cache-Control: ")
+		sb.WriteString(pwa.CacheImmutable)
+		sb.WriteString("\n")
+	}
+	return sb.String(), nil
+}
+
+// ExportHeadersRules exports headersRules for testing.
+func ExportHeadersRules(manifest map[string]any) (string, error) {
+	m := make(map[string]assetEntry)
+	for k := range manifest {
+		m[k] = assetEntry{}
+	}
+	return headersRules(m)
 }
 
 // assetHash computes sha256(base64(content) + ext), hex-encoded, truncated to 32 chars.
@@ -43,6 +83,7 @@ func (g *Goflare) buildAssetManifest(dir string) (map[string]assetEntry, map[str
 
 	manifest := make(map[string]assetEntry)
 	byHash := make(map[string]string)
+	artifactsCount := 0
 
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -66,6 +107,9 @@ func (g *Goflare) buildAssetManifest(dir string) (map[string]assetEntry, map[str
 		hash := assetHash(content, ext)
 
 		key := "/" + filepath.ToSlash(rel)
+		if strings.HasPrefix(key, pwa.ArtifactsDir) {
+			artifactsCount++
+		}
 		manifest[key] = assetEntry{
 			Hash: hash,
 			Size: len(content),
@@ -76,6 +120,10 @@ func (g *Goflare) buildAssetManifest(dir string) (map[string]assetEntry, map[str
 
 	if err != nil {
 		return nil, nil, err
+	}
+
+	if artifactsCount > 0 {
+		return nil, nil, fmt.Errorf("goflare: %d files under %s cannot be Workers static assets (25 MiB per file); serving artifacts from R2 is not implemented yet", artifactsCount, pwa.ArtifactsDir)
 	}
 
 	if len(manifest) == 0 {

@@ -178,8 +178,11 @@ func (g *Goflare) Deploy() error {
 	}
 
 	var completionToken string
+	var manifest map[string]assetEntry
 	if hasAssets {
-		manifest, byHash, err := g.buildAssetManifest(g.Config.PublicDir)
+		var byHash map[string]string
+		var err error
+		manifest, byHash, err = g.buildAssetManifest(g.Config.PublicDir)
 		if err != nil {
 			return err
 		}
@@ -206,13 +209,21 @@ func (g *Goflare) Deploy() error {
 		if err != nil {
 			return err
 		}
+		rules, err := headersRules(manifest)
+		if err != nil {
+			return err
+		}
+		config := map[string]any{
+			"html_handling":      HTMLHandlingDefault,
+			"not_found_handling": g.notFoundHandling(),
+			"run_worker_first":   workerFirst,
+		}
+		if rules != "" {
+			config["_headers"] = rules
+		}
 		metadata["assets"] = map[string]any{
 			"jwt": completionToken,
-			"config": map[string]any{
-				"html_handling":      HTMLHandlingDefault,
-				"not_found_handling": g.notFoundHandling(),
-				"run_worker_first":   workerFirst,
-			},
+			"config": config,
 		}
 	}
 

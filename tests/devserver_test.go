@@ -16,6 +16,8 @@ import (
 func TestDevServer(t *testing.T) {
 	s := devserver.New(httpd.Config{
 		Port: "9999",
+		// devserver now uses HTTPS by default, so tests must ask for plain HTTP
+		TLS: httpd.TLSConfig{PlainHTTP: true},
 	})
 
 	r := s.Router()
