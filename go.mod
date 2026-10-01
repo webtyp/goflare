@@ -1,6 +1,6 @@
 module webtyp.com/goflare
 
-go 1.25.2
+go 1.26.8
 
 require (
 	github.com/tdewolff/minify/v2 v2.24.12
@@ -10,8 +10,8 @@ require (
 	webtyp.com/git v0.0.8
 	webtyp.com/gobuild v0.0.28
 	webtyp.com/modfind v0.0.9
-	webtyp.com/server v0.2.65
-	webtyp.com/sitec v0.2.36
+	webtyp.com/server v0.2.67
+	webtyp.com/sitec v0.2.37
 	webtyp.com/sqlt v0.0.10
 	webtyp.com/tinygo v1.0.1
 )
@@ -33,6 +33,7 @@ require (
 	webtyp.com/font v0.0.5 // indirect
 	webtyp.com/image v0.1.11 // indirect
 	webtyp.com/js v0.1.0 // indirect
+	webtyp.com/pwa v0.1.0 // indirect
 	webtyp.com/storage v0.1.0 // indirect
 )
 
