@@ -10,8 +10,9 @@ require (
 	webtyp.com/git v0.0.8
 	webtyp.com/gobuild v0.0.28
 	webtyp.com/modfind v0.0.9
+	webtyp.com/pwa v0.1.1
 	webtyp.com/server v0.2.67
-	webtyp.com/sitec v0.2.40
+	webtyp.com/sitec v0.2.42
 	webtyp.com/sqlt v0.0.10
 	webtyp.com/tinygo v1.0.1
 )
@@ -27,14 +28,17 @@ require (
 	golang.org/x/term v0.45.0 // indirect
 	golang.org/x/text v0.41.0 // indirect
 	howett.net/plist v1.0.0 // indirect
+	webtyp.com/artifacts v0.1.1 // indirect
+	webtyp.com/await v0.1.2 // indirect
 	webtyp.com/color v0.1.2 // indirect
 	webtyp.com/command v0.0.4 // indirect
+	webtyp.com/device v0.1.0 // indirect
+	webtyp.com/fetch v0.1.28 // indirect
+	webtyp.com/files v0.0.4 // indirect
 	webtyp.com/fmt v1.0.0 // indirect
 	webtyp.com/font v0.0.5 // indirect
-	webtyp.com/gorun v0.0.27 // indirect
 	webtyp.com/image v0.1.11 // indirect
 	webtyp.com/js v0.1.0 // indirect
-	webtyp.com/pwa v0.1.1 // indirect
 	webtyp.com/storage v0.1.0 // indirect
 )
 
