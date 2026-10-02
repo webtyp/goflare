@@ -2,8 +2,9 @@
 PLAN: "feat: _headers from the pwa contract (immutable hashed names); refuse /artifacts/ as Workers assets"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 13169691945462994111
+PR: https://github.com/webtyp/goflare/pull/28
 ---
 
 > This plan is dispatched via the CodeJob workflow. See skill: agents-workflow.
@@ -114,3 +115,6 @@ until R2 serving exists (D-PWA-16).
 | 3 | `tests/devserver_test.go`, `go.mod` | dev server test green |
 | 4 | tests | table green |
 | 5 | `README.md`, `docs/ARCHITECTURE.md` | written |
+
+## Executor notes
+- Wrangler uses the exact `_headers` key inside `assets.config` for static asset configuration, verified against `packages/wrangler/src/api/pages/deploy.ts` and `assets.test.ts`. I applied the config payload accurately to the Cloudflare deploy workflow matching Wrangler's implementation.

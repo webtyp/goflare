@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 	"encoding/hex"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -175,5 +176,51 @@ func TestUploadAssets_TwoBucketsReturnsLastJWT(t *testing.T) {
 		if h != "Bearer session-jwt" {
 			t.Errorf("expected phase 2 to authenticate with the phase-1 jwt, got %q", h)
 		}
+	}
+}
+
+func TestHeadersRules_OnlyHashedNamesImmutable(t *testing.T) {
+	manifest := map[string]any{
+		"/": nil, "/sw.js": nil, "/style.3f9a1c2b.css": nil, "/client.9a8b7c6d.wasm": nil,
+	}
+	rules, err := goflare.ExportHeadersRules(manifest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := "/client.9a8b7c6d.wasm\n  Cache-Control: public, max-age=31536000, immutable\n/style.3f9a1c2b.css\n  Cache-Control: public, max-age=31536000, immutable\n"
+	if rules != want {
+		t.Errorf("got %q, want %q", rules, want)
+	}
+}
+
+func TestHeadersRules_NoneHashed(t *testing.T) {
+	manifest := map[string]any{"/": nil, "/sw.js": nil}
+	rules, err := goflare.ExportHeadersRules(manifest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rules != "" {
+		t.Errorf("expected empty string, got %q", rules)
+	}
+}
+
+func TestHeadersRules_TooMany(t *testing.T) {
+	manifest := make(map[string]any)
+	for i := 0; i < 101; i++ {
+		manifest[fmt.Sprintf("/style.3f9a1c2b.css-%d", i)] = nil
+	}
+	_, err := goflare.ExportHeadersRules(manifest)
+	if err == nil {
+		t.Fatal("expected error, got nil")
+	}
+}
+
+func TestBuildAssetManifest_RefusesArtifacts(t *testing.T) {
+	env := newTestEnv(t)
+	env.writePublic("artifacts/x.bin", "data")
+	g := goflare.New(&goflare.Config{PublicDir: env.PublicDir, OutputDir: env.OutputDir})
+	_, _, err := g.ExportBuildAssetManifest(env.PublicDir)
+	if err == nil || !strings.Contains(err.Error(), "/artifacts/") {
+		t.Errorf("expected artifacts error, got %v", err)
 	}
 }

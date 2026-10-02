@@ -49,6 +49,7 @@ GoFlare is a Go library and CLI that bridges the gap between Go source code and 
 ### 5. Deployment (`cloudflare.go`, `assets.go`)
 - **Internal HTTP Client:** `CfClient` handles direct interaction with Cloudflare API v4.
 - **Worker + Assets Deploy:** Unified deployment via 3-phase Direct Upload (Asset Upload Session -> Chunked Uploads -> Worker Script PUT with metadata and asset JWT).
+- **Asset Headers:** Static assets with a content-hashed name automatically receive an `immutable` Cache-Control header via Cloudflare's `_headers` policy generated from `pwa.CacheControl`'s rule; `/artifacts/` is refused until R2 serving exists (D-PWA-16).
 
 ### 6. Edge Runtime (`webtyp/cloudflare/assets/worker.mjs`, `webtyp/cloudflare/assets/runtime.mjs`, `webtyp/cloudflare/workers/workers.go`)
 > El runtime vive en **`webtyp/cloudflare`**, no en este repo — `goflare` sólo lo empaqueta vía `cloudflare/assets` embed.

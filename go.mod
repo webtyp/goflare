@@ -10,7 +10,7 @@ require (
 	webtyp.com/git v0.0.8
 	webtyp.com/gobuild v0.0.28
 	webtyp.com/modfind v0.0.9
-	webtyp.com/server v0.2.68
+	webtyp.com/server v0.2.67
 	webtyp.com/sitec v0.2.40
 	webtyp.com/sqlt v0.0.10
 	webtyp.com/tinygo v1.0.1
@@ -31,6 +31,7 @@ require (
 	webtyp.com/command v0.0.4 // indirect
 	webtyp.com/fmt v1.0.0 // indirect
 	webtyp.com/font v0.0.5 // indirect
+	webtyp.com/gorun v0.0.27 // indirect
 	webtyp.com/image v0.1.11 // indirect
 	webtyp.com/js v0.1.0 // indirect
 	webtyp.com/pwa v0.1.1 // indirect
