@@ -222,7 +222,7 @@ func (g *Goflare) Deploy() error {
 			config["_headers"] = rules
 		}
 		metadata["assets"] = map[string]any{
-			"jwt": completionToken,
+			"jwt":    completionToken,
 			"config": config,
 		}
 	}

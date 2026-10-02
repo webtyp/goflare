@@ -5,8 +5,6 @@ package goflare
 import (
 	"bytes"
 	"crypto/sha256"
-	"sort"
-	"webtyp.com/pwa"
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -15,7 +13,9 @@ import (
 	"net/textproto"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
+	"webtyp.com/pwa"
 )
 
 // assetEntry describes a file in the Worker asset manifest.
