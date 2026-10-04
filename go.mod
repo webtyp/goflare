@@ -11,7 +11,7 @@ require (
 	webtyp.com/gobuild v0.0.28
 	webtyp.com/modfind v0.0.9
 	webtyp.com/pwa v0.1.1
-	webtyp.com/server v0.2.67
+	webtyp.com/server v0.2.69
 	webtyp.com/sitec v0.2.42
 	webtyp.com/sqlt v0.0.10
 	webtyp.com/tinygo v1.0.1
