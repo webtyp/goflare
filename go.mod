@@ -33,6 +33,7 @@ require (
 	webtyp.com/color v0.1.2 // indirect
 	webtyp.com/command v0.0.4 // indirect
 	webtyp.com/device v0.1.0 // indirect
+	webtyp.com/escape v0.1.0 // indirect
 	webtyp.com/fetch v0.1.29 // indirect
 	webtyp.com/filepath v0.1.0 // indirect
 	webtyp.com/files v0.0.4 // indirect
@@ -47,7 +48,7 @@ require (
 	github.com/tdewolff/parse/v2 v2.8.11 // indirect
 	webtyp.com/context v0.0.23 // indirect
 	webtyp.com/css v0.4.27 // indirect
-	webtyp.com/dom v0.13.18 // indirect
+	webtyp.com/dom v0.13.21 // indirect
 	webtyp.com/html v0.0.24 // indirect
 	webtyp.com/json v0.5.27 // indirect
 	webtyp.com/model v0.2.2
