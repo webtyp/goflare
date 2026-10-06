@@ -12,7 +12,7 @@ require (
 	webtyp.com/modfind v0.0.10
 	webtyp.com/pwa v0.1.1
 	webtyp.com/server v0.2.69
-	webtyp.com/sitec v0.2.45
+	webtyp.com/sitec v0.2.46
 	webtyp.com/sqlt v0.0.10
 	webtyp.com/tinygo v1.0.1
 )
