@@ -50,7 +50,7 @@ require (
 	webtyp.com/context v0.0.23 // indirect
 	webtyp.com/css v0.4.29 // indirect
 	webtyp.com/dom v0.13.23 // indirect
-	webtyp.com/html v0.0.24 // indirect
+	webtyp.com/html v0.0.27 // indirect
 	webtyp.com/json v0.5.29 // indirect
 	webtyp.com/model v0.2.2
 	webtyp.com/router v0.3.0
