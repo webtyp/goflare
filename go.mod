@@ -42,7 +42,7 @@ require (
 	webtyp.com/image v0.1.16 // indirect
 	webtyp.com/js v0.1.0 // indirect
 	webtyp.com/lang v0.1.3 // indirect
-	webtyp.com/storage v0.1.0 // indirect
+	webtyp.com/storage v0.1.3 // indirect
 )
 
 require (
