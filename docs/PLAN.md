@@ -2,8 +2,10 @@
 PLAN: "feat(deploy): per-IP Cloudflare rate-limit rule on every deploy with a custom domain"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 10223021294781253467
+PR: https://github.com/webtyp/goflare/pull/29
+REVIEWED_COMMIT: 2152e3b11896b0c388ab8c361620a9008e313496
 ---
 
 > This plan is dispatched via the CodeJob workflow. See skill: agents-workflow.
