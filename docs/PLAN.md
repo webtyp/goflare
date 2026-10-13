@@ -169,3 +169,7 @@ change `action_data.go` and regenerate via `go test ./tests/`. Never edit
 - `gotest` green.
 - Before opening the PR: `git diff --stat main` lists every file of the
   stages table, and no file is deleted that this plan does not order deleted.
+
+
+## Executor notes
+Implemented the feature as requested. All test cases passed and there were no deviations from the plan.

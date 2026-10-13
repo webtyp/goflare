@@ -100,6 +100,14 @@ func main() {
 > `webtyp.com/cloudflare` — `goflare` only bundles it via `cloudflare/assets`.
 > Legacy `webtyp.com/goflare/edge` is still accepted by `mode.go` during migration.
 
+## Rate limiting
+Every deploy that includes a custom domain automatically provisions a Cloudflare **rate-limiting rule** in the zone's `http_ratelimit` phase. It defaults to 100 requests per 10 seconds per IP, and blocks for 10 seconds. This ensures APIs are secure against unbounded resource consumption by default.
+
+- Set `RATE_LIMIT_PER_10S` in `.env` to override the limit. It must be an integer >= 1.
+- **Required permission:** The Cloudflare API token must have the "Zone → Zone WAF → Edit" permission.
+- The rule utilizes `cf.colo.id` and `ip.src` characteristics, which fits within the Cloudflare Free plan constraints, making it available for all deployments.
+- Deployments without a custom domain skip this step.
+
 ## Migrations from Outside a Worker
 
 `goflare.NewD1Migrator` runs DDL migrations against a D1 database from CI —

@@ -3,6 +3,7 @@
 package goflare
 
 import (
+	"strconv"
 	"bufio"
 	"fmt"
 	"os"
@@ -17,6 +18,7 @@ const (
 	EnvKeyAccountID         = "CLOUDFLARE_ACCOUNT_ID"
 	EnvKeyWorkerName        = "WORKER_NAME"
 	EnvKeyDomain            = "DOMAIN"
+	EnvKeyRateLimitPer10s   = "RATE_LIMIT_PER_10S"
 	EnvKeyCompilerMode      = "COMPILER_MODE"
 	EnvKeyD1DatabaseID      = "D1_DATABASE_ID"
 	EnvKeyD1DatabaseName    = "D1_DATABASE_NAME"
@@ -28,7 +30,10 @@ const (
 	DefaultCompatibilityDate = "2026-08-01"
 	DefaultNotFoundHandling  = "single-page-application"
 	HTMLHandlingDefault      = "auto-trailing-slash"
+	DefaultRateLimitPer10s   = 100
 )
+
+const ErrMsgRateLimitInvalid = "RATE_LIMIT_PER_10S must be an integer >= 1: the edge rate limit cannot be disabled"
 
 // DefaultRootDir is the project root Scan reads routes/routes.go from when the
 // caller leaves Config.RootDir empty. It is a convention, not a .env key.
@@ -88,6 +93,12 @@ func LoadConfigFromEnv(path string) (*Config, error) {
 					cfg.R2BucketID = value
 				case EnvKeyR2BucketName:
 					cfg.R2BucketName = value
+				case EnvKeyRateLimitPer10s:
+					val, err := strconv.Atoi(value)
+					if err != nil || val < 1 {
+						return nil, fmt.Errorf(ErrMsgRateLimitInvalid)
+					}
+					cfg.RateLimitPer10s = val
 				}
 			}
 			if err := scanner.Err(); err != nil {
@@ -123,6 +134,16 @@ func LoadConfigFromEnv(path string) (*Config, error) {
 	}
 	if cfg.R2BucketName == "" {
 		cfg.R2BucketName = os.Getenv(EnvKeyR2BucketName)
+	}
+	if cfg.RateLimitPer10s == 0 {
+		envVal := os.Getenv(EnvKeyRateLimitPer10s)
+		if envVal != "" {
+			val, err := strconv.Atoi(envVal)
+			if err != nil || val < 1 {
+				return nil, fmt.Errorf(ErrMsgRateLimitInvalid)
+			}
+			cfg.RateLimitPer10s = val
+		}
 	}
 
 	cfg.applyDefaults()
@@ -178,6 +199,10 @@ func (c *Config) applyDefaults() {
 		if _, err := os.Stat("web/public"); err == nil {
 			c.PublicDir = "web/public"
 		}
+	}
+
+	if c.RateLimitPer10s == 0 {
+		c.RateLimitPer10s = DefaultRateLimitPer10s
 	}
 }
 
