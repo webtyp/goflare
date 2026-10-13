@@ -40,6 +40,12 @@ func TestDeploy_ConfiguresWorkerDomainWithLongestMatchingZone(t *testing.T) {
 			json.Unmarshal(body, &domainPUTBody)
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte(`{"success":true,"result":{}}`))
+		case r.Method == http.MethodGet && strings.Contains(r.URL.Path, "/rulesets/phases/http_ratelimit/entrypoint"):
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte(`{"success":false,"errors":[{"code":10007,"message":"not found"}]}`))
+		case r.Method == http.MethodPut && strings.Contains(r.URL.Path, "/rulesets/phases/http_ratelimit/entrypoint"):
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"success":true,"result":{}}`))
 		default:
 			w.WriteHeader(http.StatusNotFound)
 		}

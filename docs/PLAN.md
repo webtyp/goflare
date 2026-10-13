@@ -2,8 +2,10 @@
 PLAN: "feat(deploy): per-IP Cloudflare rate-limit rule on every deploy with a custom domain"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 10223021294781253467
+PR: https://github.com/webtyp/goflare/pull/29
+REVIEWED_COMMIT: 7c1f2a090d3002ad4f56741e2ac84473659fc0e2
 ---
 
 > This plan is dispatched via the CodeJob workflow. See skill: agents-workflow.
@@ -169,3 +171,7 @@ change `action_data.go` and regenerate via `go test ./tests/`. Never edit
 - `gotest` green.
 - Before opening the PR: `git diff --stat main` lists every file of the
   stages table, and no file is deleted that this plan does not order deleted.
+
+
+## Executor notes
+Implemented the feature as requested. All test cases passed and there were no deviations from the plan.

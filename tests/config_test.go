@@ -3,6 +3,8 @@
 package goflare_test
 
 import (
+	"os"
+	"strings"
 	"testing"
 
 	"webtyp.com/goflare"
@@ -116,4 +118,44 @@ func TestConfig_ValidateDeploy(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestLoadConfigFromEnv_RateLimit(t *testing.T) {
+	// G7: default value 100
+	cfg, err := goflare.LoadConfigFromEnv("")
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if cfg.RateLimitPer10s != 100 {
+		t.Errorf("expected default 100, got %d", cfg.RateLimitPer10s)
+	}
+
+	// Helper to set env, run, and check
+	checkEnv := func(val string, expectedErr bool, expectedVal int) {
+		os.Setenv(goflare.EnvKeyRateLimitPer10s, val)
+		defer os.Unsetenv(goflare.EnvKeyRateLimitPer10s)
+		c, err := goflare.LoadConfigFromEnv("")
+		if expectedErr {
+			if err == nil {
+				t.Errorf("expected error for val %q", val)
+			} else if !strings.Contains(err.Error(), "must be an integer >= 1") {
+				t.Errorf("expected invalid rate limit error for val %q, got: %v", val, err)
+			}
+		} else {
+			if err != nil {
+				t.Errorf("unexpected error for val %q: %v", val, err)
+			}
+			if c.RateLimitPer10s != expectedVal {
+				t.Errorf("expected %d for val %q, got %d", expectedVal, val, c.RateLimitPer10s)
+			}
+		}
+	}
+
+	// G8: invalid values
+	checkEnv("0", true, 0)
+	checkEnv("-5", true, 0)
+	checkEnv("abc", true, 0)
+
+	// Valid value
+	checkEnv("40", false, 40)
 }

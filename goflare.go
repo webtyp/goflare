@@ -58,6 +58,8 @@ type Config struct {
 	AccountID   string // CLOUDFLARE_ACCOUNT_ID
 	WorkerName  string // WORKER_NAME  (default: ProjectName + "-worker")
 
+	RateLimitPer10s int // RATE_LIMIT_PER_10S (default 100, must be >= 1)
+
 	// Routing
 	Domain string // DOMAIN (optional — custom domain)
 
@@ -101,6 +103,9 @@ func (g *Goflare) SetSiteBuilder(b SiteBuilder) {
 func New(cfg *Config) *Goflare {
 	if cfg == nil {
 		cfg = &Config{}
+	}
+	if cfg.RateLimitPer10s == 0 {
+		cfg.RateLimitPer10s = DefaultRateLimitPer10s
 	}
 	cfg.applyDefaults()
 

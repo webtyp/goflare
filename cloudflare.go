@@ -18,6 +18,8 @@ import (
 
 const cfAPIBase = "https://api.cloudflare.com/client/v4"
 
+const ErrMsgRateLimitPermission = "rate limit: the Cloudflare API token cannot edit the zone's rate limiting rules — grant it \"Zone → Zone WAF → Edit\" (the deploy refuses to ship an unthrottled API)"
+
 const (
 	contentTypeESModule = "application/javascript+module"
 	contentTypeWasm     = "application/wasm"
@@ -280,9 +282,16 @@ func (g *Goflare) Deploy() error {
 	}
 
 	if g.Config.Domain != "" {
-		if err := g.configureWorkerDomain(client); err != nil {
+		zoneID, err := g.configureWorkerDomain(client)
+		if err != nil {
 			g.Logger("Warning: failed to configure domain:", err)
+		} else {
+			if err := g.ensureRateLimitRule(client, zoneID); err != nil {
+				return err
+			}
 		}
+	} else {
+		g.Logger("rate limit: skipped (no DOMAIN; workers.dev has no zone rules)")
 	}
 
 	if hasScript {
@@ -294,10 +303,10 @@ func (g *Goflare) Deploy() error {
 	return nil
 }
 
-func (g *Goflare) configureWorkerDomain(client *CfClient) error {
+func (g *Goflare) matchZone(client *CfClient) (string, error) {
 	zonesData, err := client.get("/zones")
 	if err != nil {
-		return fmt.Errorf("failed to fetch zones: %w", err)
+		return "", fmt.Errorf("failed to fetch zones: %w", err)
 	}
 
 	var zones []struct {
@@ -305,7 +314,7 @@ func (g *Goflare) configureWorkerDomain(client *CfClient) error {
 		Name string `json:"name"`
 	}
 	if err := json.Unmarshal(zonesData, &zones); err != nil {
-		return fmt.Errorf("failed to parse zones response: %w", err)
+		return "", fmt.Errorf("failed to parse zones response: %w", err)
 	}
 
 	var matchedZoneID string
@@ -322,22 +331,117 @@ func (g *Goflare) configureWorkerDomain(client *CfClient) error {
 	}
 
 	if matchedZoneID == "" {
-		return fmt.Errorf("no zone in the account matches domain %s", domain)
+		return "", fmt.Errorf("no zone in the account matches domain %s", domain)
+	}
+	return matchedZoneID, nil
+}
+
+// rateLimitPeriod is both the counting window and the block duration, in
+// seconds: the only values the Cloudflare Free plan accepts.
+const rateLimitPeriod = 10
+
+// rateLimitRule is the one rule goflare owns in the zone's http_ratelimit
+// phase, identified by Ref. Every other rule in the phase is kept verbatim.
+type rateLimitRule struct {
+	Ref         string        `json:"ref"`
+	Description string        `json:"description"`
+	Expression  string        `json:"expression"`
+	Action      string        `json:"action"`
+	RateLimit   rateLimitSpec `json:"ratelimit"`
+}
+
+type rateLimitSpec struct {
+	Characteristics   []string `json:"characteristics"`
+	Period            int      `json:"period"`
+	RequestsPerPeriod int      `json:"requests_per_period"`
+	MitigationTimeout int      `json:"mitigation_timeout"`
+}
+
+func (g *Goflare) ensureRateLimitRule(client *CfClient, zoneID string) error {
+	path := fmt.Sprintf("/zones/%s/rulesets/phases/http_ratelimit/entrypoint", zoneID)
+
+	rulesData, err := client.get(path)
+	var rulesList []json.RawMessage
+	myRef := "goflare-" + g.Config.WorkerName
+
+	if err != nil {
+		if ce, ok := err.(*cfError); ok && ce.Status == 404 {
+			// 404: no ruleset exists yet
+			rulesList = []json.RawMessage{}
+		} else {
+			return fmt.Errorf("rate limit: %w", err)
+		}
+	} else {
+		var ruleset struct {
+			Rules []json.RawMessage `json:"rules"`
+		}
+		if err := json.Unmarshal(rulesData, &ruleset); err != nil {
+			return fmt.Errorf("rate limit: parse existing rules: %w", err)
+		}
+
+		for _, raw := range ruleset.Rules {
+			var rule struct {
+				Ref string `json:"ref"`
+			}
+			json.Unmarshal(raw, &rule)
+			if rule.Ref != myRef {
+				rulesList = append(rulesList, raw)
+			}
+		}
+	}
+
+	myRule := rateLimitRule{
+		Ref:         myRef,
+		Description: "goflare: per-IP rate limit for " + g.Config.Domain,
+		Expression:  "(http.host eq \"" + g.Config.Domain + "\")",
+		Action:      "block",
+		RateLimit: rateLimitSpec{
+			Characteristics:   []string{"cf.colo.id", "ip.src"},
+			Period:            rateLimitPeriod,
+			RequestsPerPeriod: g.Config.RateLimitPer10s,
+			MitigationTimeout: rateLimitPeriod,
+		},
+	}
+
+	myRuleJSON, err := json.Marshal(myRule)
+	if err != nil {
+		return fmt.Errorf("rate limit: %w", err)
+	}
+	rulesList = append(rulesList, json.RawMessage(myRuleJSON))
+
+	putBody, _ := json.Marshal(map[string]any{
+		"rules": rulesList,
+	})
+
+	if _, err := client.put(path, putBody); err != nil {
+		if ce, ok := err.(*cfError); ok && ce.Status == 403 {
+			return fmt.Errorf(ErrMsgRateLimitPermission)
+		}
+		return fmt.Errorf("rate limit: %w", err)
+	}
+
+	return nil
+}
+
+func (g *Goflare) configureWorkerDomain(client *CfClient) (string, error) {
+	matchedZoneID, err := g.matchZone(client)
+	if err != nil {
+		return "", err
 	}
 
 	domainPath := fmt.Sprintf("/accounts/%s/workers/domains", g.Config.AccountID)
 	body, _ := json.Marshal(map[string]string{
 		"environment": "production",
-		"hostname":    domain,
+		"hostname":    g.Config.Domain,
 		"service":     g.Config.WorkerName,
 		"zone_id":     matchedZoneID,
 	})
 
 	if _, err := client.put(domainPath, body); err != nil {
-		return err
+		return "", err
 	}
 
-	return nil
+	return matchedZoneID, nil
 }
 
 func (g *Goflare) verifyProbe(client *CfClient) error {
