@@ -336,6 +336,27 @@ func (g *Goflare) matchZone(client *CfClient) (string, error) {
 	return matchedZoneID, nil
 }
 
+// rateLimitPeriod is both the counting window and the block duration, in
+// seconds: the only values the Cloudflare Free plan accepts.
+const rateLimitPeriod = 10
+
+// rateLimitRule is the one rule goflare owns in the zone's http_ratelimit
+// phase, identified by Ref. Every other rule in the phase is kept verbatim.
+type rateLimitRule struct {
+	Ref         string        `json:"ref"`
+	Description string        `json:"description"`
+	Expression  string        `json:"expression"`
+	Action      string        `json:"action"`
+	RateLimit   rateLimitSpec `json:"ratelimit"`
+}
+
+type rateLimitSpec struct {
+	Characteristics   []string `json:"characteristics"`
+	Period            int      `json:"period"`
+	RequestsPerPeriod int      `json:"requests_per_period"`
+	MitigationTimeout int      `json:"mitigation_timeout"`
+}
+
 func (g *Goflare) ensureRateLimitRule(client *CfClient, zoneID string) error {
 	path := fmt.Sprintf("/zones/%s/rulesets/phases/http_ratelimit/entrypoint", zoneID)
 
@@ -369,20 +390,23 @@ func (g *Goflare) ensureRateLimitRule(client *CfClient, zoneID string) error {
 		}
 	}
 
-	myRule := map[string]any{
-		"ref":         myRef,
-		"description": "goflare: per-IP rate limit for " + g.Config.Domain,
-		"expression":  "(http.host eq \"" + g.Config.Domain + "\")",
-		"action":      "block",
-		"ratelimit": map[string]any{
-			"characteristics":     []string{"cf.colo.id", "ip.src"},
-			"period":              10,
-			"requests_per_period": g.Config.RateLimitPer10s,
-			"mitigation_timeout":  10,
+	myRule := rateLimitRule{
+		Ref:         myRef,
+		Description: "goflare: per-IP rate limit for " + g.Config.Domain,
+		Expression:  "(http.host eq \"" + g.Config.Domain + "\")",
+		Action:      "block",
+		RateLimit: rateLimitSpec{
+			Characteristics:   []string{"cf.colo.id", "ip.src"},
+			Period:            rateLimitPeriod,
+			RequestsPerPeriod: g.Config.RateLimitPer10s,
+			MitigationTimeout: rateLimitPeriod,
 		},
 	}
 
-	myRuleJSON, _ := json.Marshal(myRule)
+	myRuleJSON, err := json.Marshal(myRule)
+	if err != nil {
+		return fmt.Errorf("rate limit: %w", err)
+	}
 	rulesList = append(rulesList, json.RawMessage(myRuleJSON))
 
 	putBody, _ := json.Marshal(map[string]any{
