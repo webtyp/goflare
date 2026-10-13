@@ -157,7 +157,7 @@ func TestDeploy_RateLimit_UpdateExisting(t *testing.T) {
 	g := goflare.New(&goflare.Config{
 		AccountID: "acc-123", WorkerName: "my-worker",
 		PublicDir: env.PublicDir, OutputDir: env.OutputDir,
-		Domain: "api.velty.cl",
+		Domain:          "api.velty.cl",
 		RateLimitPer10s: 40,
 	})
 	g.BaseURL = server.URL

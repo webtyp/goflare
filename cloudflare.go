@@ -16,9 +16,7 @@ import (
 	"time"
 )
 
-var (
-	cfAPIBase = "https://api.cloudflare.com/client/v4"
-)
+const cfAPIBase = "https://api.cloudflare.com/client/v4"
 
 const ErrMsgRateLimitPermission = "rate limit: the Cloudflare API token cannot edit the zone's rate limiting rules — grant it \"Zone → Zone WAF → Edit\" (the deploy refuses to ship an unthrottled API)"
 
@@ -343,6 +341,7 @@ func (g *Goflare) ensureRateLimitRule(client *CfClient, zoneID string) error {
 
 	rulesData, err := client.get(path)
 	var rulesList []json.RawMessage
+	myRef := "goflare-" + g.Config.WorkerName
 
 	if err != nil {
 		if ce, ok := err.(*cfError); ok && ce.Status == 404 {
@@ -359,32 +358,31 @@ func (g *Goflare) ensureRateLimitRule(client *CfClient, zoneID string) error {
 			return fmt.Errorf("rate limit: parse existing rules: %w", err)
 		}
 
-		myRef := "goflare-" + g.Config.WorkerName
 		for _, raw := range ruleset.Rules {
 			var rule struct {
 				Ref string `json:"ref"`
 			}
 			json.Unmarshal(raw, &rule)
-			if rule.Ref != myRef && rule.Ref != "goflare-<WorkerName>" { // keep exact plan literal too just in case
+			if rule.Ref != myRef {
 				rulesList = append(rulesList, raw)
 			}
 		}
 	}
 
-	myRuleJSON := fmt.Sprintf(`
-	{
-		"ref": "goflare-%s",
-		"description": "goflare: per-IP rate limit for %s",
-		"expression": "(http.host eq \"%s\")",
-		"action": "block",
-		"ratelimit": {
-			"characteristics": ["cf.colo.id", "ip.src"],
-			"period": 10,
-			"requests_per_period": %d,
-			"mitigation_timeout": 10
-		}
-	}`, g.Config.WorkerName, g.Config.Domain, g.Config.Domain, g.Config.RateLimitPer10s)
+	myRule := map[string]any{
+		"ref":         myRef,
+		"description": "goflare: per-IP rate limit for " + g.Config.Domain,
+		"expression":  "(http.host eq \"" + g.Config.Domain + "\")",
+		"action":      "block",
+		"ratelimit": map[string]any{
+			"characteristics":     []string{"cf.colo.id", "ip.src"},
+			"period":              10,
+			"requests_per_period": g.Config.RateLimitPer10s,
+			"mitigation_timeout":  10,
+		},
+	}
 
+	myRuleJSON, _ := json.Marshal(myRule)
 	rulesList = append(rulesList, json.RawMessage(myRuleJSON))
 
 	putBody, _ := json.Marshal(map[string]any{

@@ -3,11 +3,11 @@
 package goflare
 
 import (
-	"strconv"
 	"bufio"
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"webtyp.com/router/routescan"
