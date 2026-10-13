@@ -5,18 +5,20 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"webtyp.com/router/routescan"
 )
 
-// writeRoutes writes routes/routes.go under a fresh temp root and returns it.
+// writeRoutes writes the routes file routescan reads (routescan.DefaultFile)
+// under a fresh temp root and returns it.
 func writeRoutes(t *testing.T, body string) string {
 	t.Helper()
 	root := t.TempDir()
-	dir := filepath.Join(root, "routes")
-	if err := os.MkdirAll(dir, 0o755); err != nil {
+	file := filepath.Join(root, filepath.FromSlash(routescan.DefaultFile))
+	if err := os.MkdirAll(filepath.Dir(file), 0o755); err != nil {
 		t.Fatal(err)
 	}
-	src := "package routes\n\nimport \"webtyp.com/router\"\n\nfunc Register(r router.Router) {\n" + body + "\n}\n"
-	if err := os.WriteFile(filepath.Join(dir, "routes.go"), []byte(src), 0o644); err != nil {
+	src := "package config\n\nimport \"webtyp.com/router\"\n\nfunc Register(r router.Router) {\n" + body + "\n}\n"
+	if err := os.WriteFile(file, []byte(src), 0o644); err != nil {
 		t.Fatal(err)
 	}
 	return root
@@ -73,7 +75,7 @@ func TestWorkerFirstDerivation(t *testing.T) {
 	}
 }
 
-// A project with no routes/routes.go declares no dynamic paths: the result is
+// A project with no routes file declares no dynamic paths: the result is
 // empty and there is no error. This is the behaviour that replaced the guessed
 // ["/api/*", "/oauth/*"] default.
 func TestWorkerFirstDerivation_NoRoutesFile(t *testing.T) {

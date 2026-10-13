@@ -35,7 +35,7 @@ const (
 
 const ErrMsgRateLimitInvalid = "RATE_LIMIT_PER_10S must be an integer >= 1: the edge rate limit cannot be disabled"
 
-// DefaultRootDir is the project root Scan reads routes/routes.go from when the
+// DefaultRootDir is the project root Scan reads routescan.DefaultFile from when the
 // caller leaves Config.RootDir empty. It is a convention, not a .env key.
 const DefaultRootDir = "."
 
@@ -222,7 +222,7 @@ func (g *Goflare) notFoundHandling() string {
 
 // workerFirstRoutes returns the path prefixes Cloudflare must route to the
 // Worker before the static assets, derived from the routes the project declares
-// in routes/routes.go — never guessed.
+// in the routes file (routescan.DefaultFile) — never guessed.
 //
 // Each declaration becomes one entry: a Mount or PublicDir path already carries
 // routescan.MountSuffix and is used as-is; a path with a "{param}" segment is
@@ -230,7 +230,7 @@ func (g *Goflare) notFoundHandling() string {
 // ("/api/orders/{id}" -> "/api/orders/*"); any other path is used verbatim.
 // Duplicates are removed; order is source order.
 //
-// A project with no routes/routes.go declares no dynamic paths and gets an
+// A project with no routes file declares no dynamic paths and gets an
 // empty slice — not the two prefixes the old hardcoded default guessed, which
 // is the silent-unreachable-route bug this replaced. A scan error is returned
 // to the caller so the deploy fails; there is no fallback list.

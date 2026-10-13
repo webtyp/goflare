@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"webtyp.com/router/routescan"
 
 	"webtyp.com/goflare"
 )
@@ -107,7 +108,7 @@ func TestDeploy_AssetsOnly_NoMainModuleNoScriptPart(t *testing.T) {
 	}
 }
 
-// A routes/routes.go that routescan cannot read (a variable path) fails the
+// A routes file that routescan cannot read (a variable path) fails the
 // deploy before any script PUT: the metadata's run_worker_first is derived from
 // that file, and a silent fallback would reintroduce the unreachable-route bug.
 func TestDeploy_RouteScanErrorFailsDeployAndSendsNoScript(t *testing.T) {
@@ -116,9 +117,9 @@ func TestDeploy_RouteScanErrorFailsDeployAndSendsNoScript(t *testing.T) {
 	env.writeOutput("edge.js", "console.log('edge')")
 	env.writeOutput("edge.wasm", "wasm-bytes")
 
-	routesDir := filepath.Join(env.Root, "routes")
-	os.MkdirAll(routesDir, 0o755)
-	os.WriteFile(filepath.Join(routesDir, "routes.go"), []byte(`package routes
+	routesFile := filepath.Join(env.Root, filepath.FromSlash(routescan.DefaultFile))
+	os.MkdirAll(filepath.Dir(routesFile), 0o755)
+	os.WriteFile(routesFile, []byte(`package config
 
 import "webtyp.com/router"
 
@@ -156,7 +157,7 @@ func Register(r router.Router) {
 	g.BaseURL = server.URL
 
 	if err := g.Deploy(); err == nil {
-		t.Fatal("expected Deploy to fail on an unreadable routes/routes.go, got nil")
+		t.Fatal("expected Deploy to fail on an unreadable routes file, got nil")
 	}
 	if scriptPutCalled {
 		t.Error("expected no script PUT once the route scan failed")
@@ -381,7 +382,7 @@ func TestDeploy_Both_ThreePhasesInOrderWithFullMetadataAndBindings(t *testing.T)
 	if !ok {
 		t.Fatalf("expected assets.config to be an object, got: %v", assets["config"])
 	}
-	// This fixture declares no routes/routes.go, so run_worker_first is empty:
+	// This fixture declares no routes file, so run_worker_first is empty:
 	// the derivation reads the project's declared routes, it does not guess.
 	runWorkerFirst, ok := config["run_worker_first"].([]any)
 	if !ok || len(runWorkerFirst) != 0 {
