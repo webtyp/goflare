@@ -10,7 +10,7 @@ require (
 	webtyp.com/git v0.0.8
 	webtyp.com/gobuild v0.0.28
 	webtyp.com/modfind v0.0.11
-	webtyp.com/pwa v0.1.1
+	webtyp.com/pwa v0.2.0
 	webtyp.com/server v0.2.69
 	webtyp.com/sitec v0.2.50
 	webtyp.com/sqlt v0.0.10
