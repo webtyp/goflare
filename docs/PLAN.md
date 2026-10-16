@@ -2,8 +2,6 @@
 PLAN: "feat!: goflare.Worker — deploy.Target for Cloudflare Workers: bootstrap token, per-project account token, D1/R2 by name, Worker secrets; rename the D1/R2 config"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
-SESSION: 16051603333022940540
 ---
 
 > Read AGENTS.md at the repo root before any change.
