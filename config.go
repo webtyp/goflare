@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 
+	"webtyp.com/deploy"
 	"webtyp.com/router/routescan"
 )
 
@@ -20,10 +21,11 @@ const (
 	EnvKeyDomain            = "DOMAIN"
 	EnvKeyRateLimitPer10s   = "RATE_LIMIT_PER_10S"
 	EnvKeyCompilerMode      = "COMPILER_MODE"
-	EnvKeyD1DatabaseID      = "D1_DATABASE_ID"
-	EnvKeyD1DatabaseName    = "D1_DATABASE_NAME"
-	EnvKeyR2BucketID        = "R2_BUCKET_ID"
-	EnvKeyR2BucketName      = "R2_BUCKET_NAME"
+	EnvKeyD1Binding         = "D1_BINDING"
+	EnvKeyD1Name            = "D1_NAME"
+	EnvKeyR2Binding         = "R2_BINDING"
+	EnvKeyR2Bucket          = "R2_BUCKET"
+	EnvKeyVars              = "VARS"
 	EnvKeyCompatibilityDate = "COMPATIBILITY_DATE"
 	EnvKeyNotFoundHandling  = "NOT_FOUND_HANDLING"
 
@@ -85,14 +87,20 @@ func LoadConfigFromEnv(path string) (*Config, error) {
 					cfg.Domain = value
 				case EnvKeyCompilerMode:
 					cfg.CompilerMode = value
-				case EnvKeyD1DatabaseID:
-					cfg.D1DatabaseID = value
-				case EnvKeyD1DatabaseName:
-					cfg.D1DatabaseName = value
-				case EnvKeyR2BucketID:
-					cfg.R2BucketID = value
-				case EnvKeyR2BucketName:
-					cfg.R2BucketName = value
+				case EnvKeyD1Binding:
+					cfg.D1Binding = value
+				case EnvKeyD1Name:
+					cfg.D1Name = value
+				case EnvKeyR2Binding:
+					cfg.R2Binding = value
+				case EnvKeyR2Bucket:
+					cfg.R2Bucket = value
+				case EnvKeyVars:
+					vars, err := parseVars(value)
+					if err != nil {
+						return nil, err
+					}
+					cfg.Vars = vars
 				case EnvKeyRateLimitPer10s:
 					val, err := strconv.Atoi(value)
 					if err != nil || val < 1 {
@@ -123,17 +131,24 @@ func LoadConfigFromEnv(path string) (*Config, error) {
 	if cfg.CompilerMode == "" {
 		cfg.CompilerMode = os.Getenv(EnvKeyCompilerMode)
 	}
-	if cfg.D1DatabaseID == "" {
-		cfg.D1DatabaseID = os.Getenv(EnvKeyD1DatabaseID)
+	if cfg.D1Binding == "" {
+		cfg.D1Binding = os.Getenv(EnvKeyD1Binding)
 	}
-	if cfg.D1DatabaseName == "" {
-		cfg.D1DatabaseName = os.Getenv(EnvKeyD1DatabaseName)
+	if cfg.D1Name == "" {
+		cfg.D1Name = os.Getenv(EnvKeyD1Name)
 	}
-	if cfg.R2BucketID == "" {
-		cfg.R2BucketID = os.Getenv(EnvKeyR2BucketID)
+	if cfg.R2Binding == "" {
+		cfg.R2Binding = os.Getenv(EnvKeyR2Binding)
 	}
-	if cfg.R2BucketName == "" {
-		cfg.R2BucketName = os.Getenv(EnvKeyR2BucketName)
+	if cfg.R2Bucket == "" {
+		cfg.R2Bucket = os.Getenv(EnvKeyR2Bucket)
+	}
+	if len(cfg.Vars) == 0 {
+		vars, err := parseVars(os.Getenv(EnvKeyVars))
+		if err != nil {
+			return nil, err
+		}
+		cfg.Vars = vars
 	}
 	if cfg.RateLimitPer10s == 0 {
 		envVal := os.Getenv(EnvKeyRateLimitPer10s)
@@ -148,6 +163,24 @@ func LoadConfigFromEnv(path string) (*Config, error) {
 
 	cfg.applyDefaults()
 	return cfg, nil
+}
+
+// parseVars reads VARS: one KEY=VALUE per line, split on the first "=".
+// Blank lines are skipped; a line without "=" is ErrInvalidVarLine.
+func parseVars(value string) ([]deploy.Var, error) {
+	var vars []deploy.Var
+	for _, line := range strings.Split(value, "\n") {
+		line = strings.TrimSuffix(line, "\r")
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
+		key, val, ok := strings.Cut(line, "=")
+		if !ok {
+			return nil, fmt.Errorf("%w: %s", ErrInvalidVarLine, line)
+		}
+		vars = append(vars, deploy.Var{Key: key, Value: val})
+	}
+	return vars, nil
 }
 
 // ValidateBuild checks only what goflare build requires.

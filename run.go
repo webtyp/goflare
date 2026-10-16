@@ -181,6 +181,21 @@ func RunDeploy(envPath string, out io.Writer) error {
 	return nil
 }
 
+// RunD1ID runs the d1-id subcommand: prints the ID of the D1 database named
+// D1_NAME. Not found or D1_NAME empty → error (exit 1).
+func RunD1ID(envPath string, out io.Writer) error {
+	cfg, err := LoadConfigFromEnv(envPath)
+	if err != nil {
+		return err
+	}
+	id, err := New(cfg).D1ID()
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(out, id)
+	return nil
+}
+
 // Usage returns the usage string.
 func Usage() string {
 	return `Usage: goflare <command> [flags]
@@ -191,6 +206,7 @@ Commands:
   deploy    Deploy the project to Cloudflare (requires CLOUDFLARE_API_TOKEN env var)
   size      Break down the edge wasm size per package and list forbidden imports
   tinygo    Install TinyGo when missing and print its bin directory and version
+  d1-id     Print the D1 database ID for the configured D1Name
 
 Flags:
   -env string

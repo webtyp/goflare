@@ -6,14 +6,13 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 )
 
 var errNoToken = fmt.Errorf("CLOUDFLARE_API_TOKEN is not defined.\n" +
-	"Deployment is executed in CI. Register the token in:\n" +
-	"  GitHub → Settings → Secrets and variables → Actions → New repository secret\n" +
-	"  Name: CLOUDFLARE_API_TOKEN\n\n" +
-	"To validate a token locally before pasting it:\n" +
-	"  CLOUDFLARE_API_TOKEN=cfat_... goflare auth --check")
+	"Deployment is executed in CI. The deploy wizard (webtyp app, target goflare.Worker)\n" +
+	"creates the project's Cloudflare token and stores it as the CLOUDFLARE_API_TOKEN\n" +
+	"secret of the repository; run it to provision the project.")
 
 func (g *Goflare) token() (string, error) {
 	t := os.Getenv("CLOUDFLARE_API_TOKEN")
@@ -32,6 +31,21 @@ func (g *Goflare) Auth() error {
 	return g.validateToken(t)
 }
 
+// accountTokenPrefix marks a Cloudflare account-owned token, the kind
+// Provision creates. Those are verified on the account endpoint; user
+// tokens (any other value) on /user/tokens/verify.
+const accountTokenPrefix = "cfat_"
+
+func (g *Goflare) verifyPath(token string) (string, error) {
+	if !strings.HasPrefix(token, accountTokenPrefix) {
+		return "/user/tokens/verify", nil
+	}
+	if g.Config == nil || g.Config.AccountID == "" {
+		return "", fmt.Errorf("an account token (%s…) needs %s to be verified", accountTokenPrefix, EnvKeyAccountID)
+	}
+	return fmt.Sprintf("/accounts/%s/tokens/verify", g.Config.AccountID), nil
+}
+
 func (g *Goflare) validateToken(token string) error {
 	client := &CfClient{
 		Token:      token,
@@ -39,13 +53,16 @@ func (g *Goflare) validateToken(token string) error {
 		BaseURL:    g.BaseURL,
 	}
 
-	if _, err := client.get("/user/tokens/verify"); err != nil {
+	path, err := g.verifyPath(token)
+	if err != nil {
+		return err
+	}
+	if _, err := client.get(path); err != nil {
 		return fmt.Errorf(
 			"%w\n\nToken validation failed. Check:\n"+
 				"  - Token is not expired\n"+
-				"  - Token has Workers Scripts (Edit) + Pages (Edit) permissions\n"+
 				"  - Token is for the correct Cloudflare account\n\n"+
-				"Check instructions in GitHub → Settings → Secrets and variables → Actions",
+				"The deploy wizard (webtyp app) creates and rotates this token; run it again to replace it.",
 			err,
 		)
 	}

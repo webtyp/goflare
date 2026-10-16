@@ -6,9 +6,12 @@ require (
 	github.com/tdewolff/minify/v2 v2.24.12
 	webtyp.com/cloudflare v0.0.39
 	webtyp.com/ddl v0.0.15
+	webtyp.com/deploy v0.2.110
 	webtyp.com/ghaction v0.1.2
 	webtyp.com/git v0.0.8
 	webtyp.com/gobuild v0.0.28
+	webtyp.com/keyring v0.2.9
+	webtyp.com/lang v0.1.6
 	webtyp.com/modfind v0.0.11
 	webtyp.com/pwa v0.2.0
 	webtyp.com/server v0.2.86
@@ -41,7 +44,8 @@ require (
 	webtyp.com/font v0.0.5 // indirect
 	webtyp.com/image v0.1.16 // indirect
 	webtyp.com/js v0.1.0 // indirect
-	webtyp.com/lang v0.1.6 // indirect
+	webtyp.com/jsvalue v0.1.6 // indirect
+	webtyp.com/orm v0.12.8 // indirect
 	webtyp.com/storage v0.1.4 // indirect
 )
 

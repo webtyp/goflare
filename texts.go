@@ -1,0 +1,31 @@
+package goflare
+
+import "webtyp.com/lang"
+
+const (
+	textBootstrapMissing     lang.Text = "Cloudflare bootstrap token"
+	textBootstrapInvalid     lang.Text = "Cloudflare bootstrap token is not valid"
+	textBootstrapExpiring    lang.Text = "Cloudflare bootstrap token expires soon"
+	textBootstrapWhy         lang.Text = "webtyp uses your bootstrap token to create resources and project tokens"
+	textBootstrapStep1       lang.Text = "Open https://dash.cloudflare.com/profile/api-tokens"
+	textBootstrapStep2       lang.Text = "Select Create Token and the template 'Create additional tokens'"
+	textBootstrapStep3       lang.Text = "Limit it to one account, set TTL to 90 days, and copy it here"
+	textAccountLimit         lang.Text = "Cloudflare account scope"
+	textAccountLimitWhy      lang.Text = "The bootstrap token has access to more than one account"
+	textAccountLimitStep     lang.Text = "Create the bootstrap token limited to one account"
+	textD1Missing            lang.Text = "Cloudflare D1 database"
+	textD1MissingWhy         lang.Text = "The D1 database declared in the deploy plan does not exist yet"
+	textD1MissingStep        lang.Text = "webtyp will create the D1 database in Cloudflare"
+	textR2Missing            lang.Text = "Cloudflare R2 bucket"
+	textR2MissingWhy         lang.Text = "The R2 bucket declared in the deploy plan does not exist yet"
+	textR2MissingStep        lang.Text = "webtyp will create the R2 bucket in Cloudflare"
+	textDomainMissing        lang.Text = "Cloudflare zone"
+	textDomainMissingWhy     lang.Text = "The domain declared in the deploy plan is not in this Cloudflare account"
+	textDomainMissingStep    lang.Text = "Add the domain to this Cloudflare account"
+	textAccountTokenMissing  lang.Text = "Cloudflare project token"
+	textAccountTokenWhy      lang.Text = "The scoped project token is missing or its permissions do not match the plan"
+	textAccountTokenStep     lang.Text = "webtyp will create the scoped project token and store it in CI"
+	textCISecretsMissing     lang.Text = "Cloudflare CI secrets"
+	textCISecretsMissingWhy  lang.Text = "CI lacks CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID"
+	textCISecretsMissingStep lang.Text = "webtyp will upload the Cloudflare credentials to CI"
+)

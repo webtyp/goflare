@@ -7,6 +7,7 @@ import (
 	"runtime/debug"
 	"time"
 
+	"webtyp.com/deploy"
 	"webtyp.com/sitec"
 )
 
@@ -74,10 +75,11 @@ type Config struct {
 	// Compiler
 	CompilerMode string // "S" | "M" | "L"  default: "S"
 
-	D1DatabaseID   string // D1_DATABASE_ID
-	D1DatabaseName string // D1_DATABASE_NAME — optional, default: ProjectName
-	R2BucketID     string // R2_BUCKET_ID
-	R2BucketName   string // R2_BUCKET_NAME
+	D1Binding string // D1_BINDING
+	D1Name    string // D1_NAME    — database name in the account; its ID is resolved at deploy
+	R2Binding string // R2_BINDING
+	R2Bucket  string // R2_BUCKET
+	Vars      []deploy.Var
 }
 
 type Goflare struct {

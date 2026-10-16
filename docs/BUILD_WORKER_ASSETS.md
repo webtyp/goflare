@@ -98,9 +98,10 @@ proyecto declara** en `routes/routes.go`, leídas en tiempo de build con
 
 ## Secretos y Bindings
 
-Los bindings de D1 y R2 se configuran automáticamente si se definen `D1_DATABASE_ID` o `R2_BUCKET_ID`.
+Los bindings de D1 y R2 se configuran automáticamente si se definen `D1_NAME` o `R2_BUCKET`.
+El ID de la base de datos se resuelve automáticamente utilizando Cloudflare API.
 
-> *Las variables de ejecución se cargan como Secret. Una variable de texto plano creada en el panel desaparece en el siguiente despliegue: el `metadata` del despliegue es la fuente de verdad para todo binding que no sea secreto.*
+> *Las variables de ejecución se cargan como Secret. Una variable de texto plano (VARS) creada en el panel desaparece en el siguiente despliegue: el `metadata` del despliegue es la fuente de verdad para todo binding que no sea secreto.*
 
 ---
 

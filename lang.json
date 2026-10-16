@@ -1,0 +1,30 @@
+{
+  "languages": ["es", "zh", "hi", "ar", "pt", "fr", "de", "ru"],
+  "keys": {
+    "Add the domain to this Cloudflare account": ["Añade el dominio a esta cuenta de Cloudflare", "", "", "", "", "", "", ""],
+    "CI lacks CLOUDFLARE_API_TOKEN or CLOUDFLARE_ACCOUNT_ID": ["Al CI le falta CLOUDFLARE_API_TOKEN o CLOUDFLARE_ACCOUNT_ID", "", "", "", "", "", "", ""],
+    "Cloudflare CI secrets": ["Secretos de Cloudflare en CI", "", "", "", "", "", "", ""],
+    "Cloudflare D1 database": ["Base de datos D1 de Cloudflare", "", "", "", "", "", "", ""],
+    "Cloudflare R2 bucket": ["Bucket R2 de Cloudflare", "", "", "", "", "", "", ""],
+    "Cloudflare account scope": ["Alcance de cuenta de Cloudflare", "", "", "", "", "", "", ""],
+    "Cloudflare bootstrap token": ["Token inicial de Cloudflare", "", "", "", "", "", "", ""],
+    "Cloudflare bootstrap token expires soon": ["El token inicial de Cloudflare caduca pronto", "", "", "", "", "", "", ""],
+    "Cloudflare bootstrap token is not valid": ["El token inicial de Cloudflare no es válido", "", "", "", "", "", "", ""],
+    "Cloudflare project token": ["Token del proyecto en Cloudflare", "", "", "", "", "", "", ""],
+    "Cloudflare zone": ["Zona de Cloudflare", "", "", "", "", "", "", ""],
+    "Create the bootstrap token limited to one account": ["Crea el token inicial limitado a una cuenta", "", "", "", "", "", "", ""],
+    "Limit it to one account, set TTL to 90 days, and copy it here": ["Limítalo a una cuenta, define TTL de 90 días y cópialo aquí", "", "", "", "", "", "", ""],
+    "Open https://dash.cloudflare.com/profile/api-tokens": ["Abre https://dash.cloudflare.com/profile/api-tokens", "", "", "", "", "", "", ""],
+    "Select Create Token and the template 'Create additional tokens'": ["Selecciona Create Token y la plantilla 'Create additional tokens'", "", "", "", "", "", "", ""],
+    "The D1 database declared in the deploy plan does not exist yet": ["La base de datos D1 declarada en el plan de despliegue aún no existe", "", "", "", "", "", "", ""],
+    "The R2 bucket declared in the deploy plan does not exist yet": ["El bucket R2 declarado en el plan de despliegue aún no existe", "", "", "", "", "", "", ""],
+    "The bootstrap token has access to more than one account": ["El token inicial tiene acceso a más de una cuenta", "", "", "", "", "", "", ""],
+    "The domain declared in the deploy plan is not in this Cloudflare account": ["El dominio declarado en el plan de despliegue no está en esta cuenta de Cloudflare", "", "", "", "", "", "", ""],
+    "The scoped project token is missing or its permissions do not match the plan": ["El token del proyecto no existe o sus permisos no coinciden con el plan", "", "", "", "", "", "", ""],
+    "webtyp uses your bootstrap token to create resources and project tokens": ["webtyp usa tu token inicial para crear recursos y tokens del proyecto", "", "", "", "", "", "", ""],
+    "webtyp will create the D1 database in Cloudflare": ["webtyp creará la base de datos D1 en Cloudflare", "", "", "", "", "", "", ""],
+    "webtyp will create the R2 bucket in Cloudflare": ["webtyp creará el bucket R2 en Cloudflare", "", "", "", "", "", "", ""],
+    "webtyp will create the scoped project token and store it in CI": ["webtyp creará el token del proyecto y lo guardará en CI", "", "", "", "", "", "", ""],
+    "webtyp will upload the Cloudflare credentials to CI": ["webtyp subirá las credenciales de Cloudflare al CI", "", "", "", "", "", "", ""]
+  }
+}

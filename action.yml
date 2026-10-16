@@ -22,10 +22,19 @@ inputs:
     description: DOMAIN
     required: false
   d1-binding:
-    description: D1_DATABASE_NAME
+    description: D1_BINDING
+    required: false
+  d1-name:
+    description: D1_NAME
     required: false
   r2-binding:
-    description: R2_BUCKET_NAME
+    description: R2_BINDING
+    required: false
+  r2-bucket:
+    description: R2_BUCKET
+    required: false
+  vars:
+    description: VARS
     required: false
   compatibility-date:
     description: COMPATIBILITY_DATE
@@ -95,7 +104,7 @@ runs:
         # Last resort only. This literal is baked at generation time, so it can never
         # name the tag being released right now.
         if [ -z "$version" ]; then
-          version="v0.5.40"
+          version="v0.5.41"
         fi
 
         case "$(uname -s)-$(uname -m)" in
@@ -162,15 +171,26 @@ runs:
         PROJECT_NAME: '${{ inputs.project || inputs.worker }}'
         WORKER_NAME: '${{ inputs.worker }}'
         DOMAIN: '${{ inputs.domain }}'
-        D1_DATABASE_NAME: '${{ inputs.d1-binding }}'
-        R2_BUCKET_NAME: '${{ inputs.r2-binding }}'
+        D1_BINDING: '${{ inputs.d1-binding }}'
+        D1_NAME: '${{ inputs.d1-name }}'
+        R2_BINDING: '${{ inputs.r2-binding }}'
+        R2_BUCKET: '${{ inputs.r2-bucket }}'
+        VARS: '${{ inputs.vars }}'
         COMPATIBILITY_DATE: '${{ inputs.compatibility-date }}'
         NOT_FOUND_HANDLING: '${{ inputs.not-found-handling }}'
     # This is where schema migration goes: it runs once per deploy, not once per isolate start.
     - name: Pre-deploy command
       if: 'inputs.pre-deploy != '''' && inputs.deploy == ''true'''
       shell: bash
-      run: '${{ inputs.pre-deploy }}'
+      run: |
+        if [ -n "${{ inputs.d1-name }}" ]; then
+          d1_id="$(goflare d1-id)"
+          D1_DATABASE_ID="$d1_id" ${{ inputs.pre-deploy }}
+        else
+          ${{ inputs.pre-deploy }}
+        fi
+      env:
+        D1_NAME: '${{ inputs.d1-name }}'
     - name: goflare deploy
       if: 'inputs.deploy == ''true'''
       shell: bash
@@ -179,7 +199,10 @@ runs:
         PROJECT_NAME: '${{ inputs.project || inputs.worker }}'
         WORKER_NAME: '${{ inputs.worker }}'
         DOMAIN: '${{ inputs.domain }}'
-        D1_DATABASE_NAME: '${{ inputs.d1-binding }}'
-        R2_BUCKET_NAME: '${{ inputs.r2-binding }}'
+        D1_BINDING: '${{ inputs.d1-binding }}'
+        D1_NAME: '${{ inputs.d1-name }}'
+        R2_BINDING: '${{ inputs.r2-binding }}'
+        R2_BUCKET: '${{ inputs.r2-bucket }}'
+        VARS: '${{ inputs.vars }}'
         COMPATIBILITY_DATE: '${{ inputs.compatibility-date }}'
         NOT_FOUND_HANDLING: '${{ inputs.not-found-handling }}'

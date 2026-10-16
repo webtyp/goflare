@@ -61,6 +61,15 @@ func main() {
 			os.Exit(1)
 		}
 
+	case "d1-id":
+		fs := flag.NewFlagSet("d1-id", flag.ExitOnError)
+		env := fs.String("env", ".env", "path to .env file")
+		fs.Parse(args)
+		if err := goflare.RunD1ID(*env, os.Stdout); err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+
 	case "help", "-h", "--help":
 		fmt.Println(goflare.Usage())
 
