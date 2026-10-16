@@ -11,10 +11,10 @@ GoFlare se despliega en GitHub Actions usando la action oficial `webtyp/goflare@
     worker: mi-worker
     domain: mi-worker.ejemplo.cl
     d1-binding: DB
+    d1-name: my-d1
   env:
     CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-    D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
 ```
 
 ## Inputs y Variables de Entorno
@@ -24,8 +24,11 @@ GoFlare se despliega en GitHub Actions usando la action oficial `webtyp/goflare@
 | `worker` | **sí** | — | `WORKER_NAME` |
 | `project` | no | `''` | `PROJECT_NAME` (si está vacío usa `worker`) |
 | `domain` | no | `''` | `DOMAIN` |
-| `d1-binding` | no | `''` | `D1_DATABASE_NAME` |
-| `r2-binding` | no | `''` | `R2_BUCKET_NAME` |
+| `d1-binding` | no | `''` | `D1_BINDING` |
+| `d1-name` | no | `''` | `D1_NAME` |
+| `r2-binding` | no | `''` | `R2_BINDING` |
+| `r2-bucket` | no | `''` | `R2_BUCKET` |
+| `vars` | no | `''` | `VARS` |
 | `compatibility-date` | no | `''` | `COMPATIBILITY_DATE` |
 | `not-found-handling` | no | `''` | `NOT_FOUND_HANDLING` |
 | `version` | no | `''` | Versión del binario de `goflare` a descargar |
@@ -38,8 +41,8 @@ GoFlare se despliega en GitHub Actions usando la action oficial `webtyp/goflare@
 
 ### Inputs vs Secretos
 
-- **Inputs:** Opciones de configuración del proyecto (`worker`, `domain`, `d1-binding`, etc.).
-- **Secretos:** Credenciales de autenticación (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `D1_DATABASE_ID`, `R2_BUCKET_ID`).
+- **Inputs:** Opciones de configuración del proyecto (`worker`, `domain`, `d1-binding`, `vars`, etc.).
+- **Secretos:** Credenciales de autenticación (`CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`).
 
 > ⚠️ **Los secretos NUNCA son inputs.** Pasar secretos como inputs de una composite action los expone en los logs de depuración de GitHub Actions. Pásalos siempre mediante `env:`.
 

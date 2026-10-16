@@ -72,7 +72,6 @@ Deployment is designed to run in CI with a single action line:
   env:
     CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-    D1_DATABASE_ID: ${{ secrets.D1_DATABASE_ID }}
 ```
 
 For more details see [CI_GITHUB_ACTIONS.md](docs/CI_GITHUB_ACTIONS.md) and [CI_D1_SECRETS.md](docs/CI_D1_SECRETS.md).

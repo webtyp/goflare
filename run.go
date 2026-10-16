@@ -181,6 +181,41 @@ func RunDeploy(envPath string, out io.Writer) error {
 	return nil
 }
 
+// RunD1ID runs the d1-id subcommand.
+func RunD1ID(envPath string, out io.Writer) error {
+	cfg, err := LoadConfigFromEnv(envPath)
+	if err != nil {
+		return err
+	}
+	if cfg.D1Name == "" {
+		return nil // Not an error to not have a database.
+	}
+	if cfg.AccountID == "" {
+		return fmt.Errorf("AccountID is required (set CLOUDFLARE_ACCOUNT_ID env var)")
+	}
+
+	g := New(cfg)
+	if err := g.Auth(); err != nil {
+		return err
+	}
+	token, err := g.token()
+	if err != nil {
+		return err
+	}
+	client := &CfClient{
+		Token:      token,
+		BaseURL:    g.BaseURL,
+		HttpClient: http.DefaultClient,
+	}
+
+	id, err := g.getD1ID(client)
+	if err != nil {
+		return err
+	}
+	fmt.Fprintln(out, id)
+	return nil
+}
+
 // Usage returns the usage string.
 func Usage() string {
 	return `Usage: goflare <command> [flags]
@@ -191,6 +226,7 @@ Commands:
   deploy    Deploy the project to Cloudflare (requires CLOUDFLARE_API_TOKEN env var)
   size      Break down the edge wasm size per package and list forbidden imports
   tinygo    Install TinyGo when missing and print its bin directory and version
+  d1-id     Print the D1 database ID for the configured D1Name
 
 Flags:
   -env string

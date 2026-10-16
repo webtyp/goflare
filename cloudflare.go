@@ -43,6 +43,10 @@ func (c *CfClient) put(path string, body []byte) ([]byte, error) {
 	return c.do(http.MethodPut, path, bytes.NewReader(body))
 }
 
+func (c *CfClient) delete(path string) ([]byte, error) {
+	return c.do(http.MethodDelete, path, nil)
+}
+
 func (c *CfClient) putMultipart(path string, body io.Reader, contentType string) ([]byte, error) {
 	return c.doMultipart(http.MethodPut, path, body, contentType)
 }
@@ -113,6 +117,32 @@ func detectContentType(filename string) string {
 	default:
 		return "application/octet-stream"
 	}
+}
+
+func (g *Goflare) getD1ID(client *CfClient) (string, error) {
+	if g.Config.D1Name == "" {
+		return "", nil
+	}
+	res, err := client.get(fmt.Sprintf("/accounts/%s/d1/database?name=%s", g.Config.AccountID, g.Config.D1Name))
+	if err != nil {
+		return "", err
+	}
+
+	var result []struct {
+		UUID string `json:"uuid"`
+		Name string `json:"name"`
+	}
+	if err := json.Unmarshal(res, &result); err != nil {
+		return "", fmt.Errorf("failed to parse D1 lookup response: %w", err)
+	}
+
+	for _, db := range result {
+		if db.Name == g.Config.D1Name {
+			return db.UUID, nil
+		}
+	}
+
+	return "", fmt.Errorf("ErrD1NotFound: database '%s' not found", g.Config.D1Name)
 }
 
 func (g *Goflare) getWorkerSubdomain(client *CfClient) string {
@@ -230,27 +260,37 @@ func (g *Goflare) Deploy() error {
 	}
 
 	var bindings []any
-	if g.Config.D1DatabaseID != "" {
-		dbName := g.Config.D1DatabaseName
-		if dbName == "" {
-			dbName = "DB"
+	if g.Config.D1Name != "" {
+		if g.Config.D1Binding == "" {
+			return fmt.Errorf("ErrBindingWithoutName: D1_NAME is set but D1_BINDING is empty")
+		}
+		dbID, err := g.getD1ID(client)
+		if err != nil {
+			return err
 		}
 		bindings = append(bindings, map[string]string{
 			"type": "d1",
-			"name": dbName,
-			"id":   g.Config.D1DatabaseID,
+			"name": g.Config.D1Binding,
+			"id":   dbID,
 		})
 	}
 
-	if g.Config.R2BucketID != "" {
-		bucketName := g.Config.R2BucketName
-		if bucketName == "" {
-			bucketName = "FILES"
+	if g.Config.R2Bucket != "" {
+		if g.Config.R2Binding == "" {
+			return fmt.Errorf("ErrBindingWithoutName: R2_BUCKET is set but R2_BINDING is empty")
 		}
 		bindings = append(bindings, map[string]string{
 			"type":        "r2_bucket",
-			"name":        bucketName,
-			"bucket_name": g.Config.R2BucketID,
+			"name":        g.Config.R2Binding,
+			"bucket_name": g.Config.R2Bucket,
+		})
+	}
+
+	for _, v := range g.Config.Vars {
+		bindings = append(bindings, map[string]string{
+			"type": "plain_text",
+			"name": v.Key,
+			"text": v.Value,
 		})
 	}
 

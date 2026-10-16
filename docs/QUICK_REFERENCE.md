@@ -26,8 +26,6 @@
 |---|---|---|
 | `CLOUDFLARE_API_TOKEN` | Secret | dash.cloudflare.com → Profile → API Tokens → Create Token (Edit Workers) |
 | `CLOUDFLARE_ACCOUNT_ID` | Secret | Cloudflare Dashboard → Right sidebar |
-| `D1_DATABASE_ID` | Variable | Workers & Pages → D1 → Database ID |
-| `R2_BUCKET_ID` | Variable | Workers & Pages → R2 → Bucket Name / ID |
 
 ## Conventions (Not configurable)
 

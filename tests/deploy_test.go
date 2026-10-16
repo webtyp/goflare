@@ -336,6 +336,9 @@ func TestDeploy_Both_ThreePhasesInOrderWithFullMetadataAndBindings(t *testing.T)
 			captured = captureDeployPUT(t, r)
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte(`{"success":true,"result":{}}`))
+		case r.Method == http.MethodGet && strings.Contains(r.URL.Path, "/d1/database"):
+			w.WriteHeader(http.StatusOK)
+			w.Write([]byte(`{"success":true,"result":[{"name":"d1-id-123","uuid":"d1-uuid"}]}`))
 		default:
 			w.WriteHeader(http.StatusNotFound)
 		}
@@ -345,8 +348,8 @@ func TestDeploy_Both_ThreePhasesInOrderWithFullMetadataAndBindings(t *testing.T)
 	g := goflare.New(&goflare.Config{
 		AccountID: "acc-123", WorkerName: "my-worker",
 		PublicDir: env.PublicDir, OutputDir: env.OutputDir,
-		D1DatabaseID: "d1-id-123",
-		R2BucketID:   "r2-bucket-123",
+		D1Binding: "DB", D1Name: "d1-id-123",
+		R2Binding: "FILES", R2Bucket:   "r2-bucket-123",
 	})
 	g.BaseURL = server.URL
 
@@ -398,13 +401,13 @@ func TestDeploy_Both_ThreePhasesInOrderWithFullMetadataAndBindings(t *testing.T)
 		bm, _ := b.(map[string]any)
 		switch bm["type"] {
 		case "d1":
-			hasD1 = bm["id"] == "d1-id-123"
+			hasD1 = bm["id"] == "d1-uuid"
 		case "r2_bucket":
 			hasR2 = bm["bucket_name"] == "r2-bucket-123"
 		}
 	}
 	if !hasD1 {
-		t.Errorf("expected a d1 binding with id d1-id-123, got: %v", bindings)
+		t.Errorf("expected a d1 binding with id d1-uuid, got: %v", bindings)
 	}
 	if !hasR2 {
 		t.Errorf("expected an r2_bucket binding with bucket_name r2-bucket-123, got: %v", bindings)
