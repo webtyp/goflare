@@ -46,8 +46,8 @@ func (t *Target) Job(p deploy.Plan) deploy.Job {
 	}
 
 	return deploy.Job{
-		Uses: "webtyp/goflare@v1",
-		With: with,
+		Uses:    "webtyp/goflare@v1",
+		With:    with,
 		Secrets: []string{"CLOUDFLARE_API_TOKEN", "CLOUDFLARE_ACCOUNT_ID"},
 	}
 }

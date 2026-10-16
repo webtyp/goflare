@@ -191,7 +191,8 @@ echo "version=${version}" >> "$GITHUB_OUTPUT"`
 				Name:    "Pre-deploy command",
 				If:      "inputs.pre-deploy != '' && inputs.deploy == 'true'",
 				Shell:   "bash",
-				Run:     "if [ -n \"${{ inputs.d1-name }}\" ]; then\n  D1_DATABASE_ID=\"$(goflare d1-id)\" ${{ inputs.pre-deploy }}\nelse\n  ${{ inputs.pre-deploy }}\nfi",
+				Run:     "if [ -n \"${{ inputs.d1-name }}\" ]; then\n  d1_id=\"$(goflare d1-id)\"\n  D1_DATABASE_ID=\"$d1_id\" ${{ inputs.pre-deploy }}\nelse\n  ${{ inputs.pre-deploy }}\nfi",
+				Env:     []ghaction.KeyValue{{Key: "D1_NAME", Value: "${{ inputs.d1-name }}"}},
 				Comment: "This is where schema migration goes: it runs once per deploy, not once per isolate start.",
 			},
 			{

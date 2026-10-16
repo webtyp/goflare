@@ -96,7 +96,7 @@ func newFakeCF(state fakeCFState) *httptest.Server {
 			return
 		}
 
-		if strings.HasPrefix(r.URL.Path, "/user/tokens/permission_groups") {
+		if strings.HasPrefix(r.URL.Path, "/accounts/a/tokens/permission_groups") {
 			json.NewEncoder(w).Encode(map[string]any{
 				"success": true,
 				"result": []map[string]any{
@@ -111,7 +111,7 @@ func newFakeCF(state fakeCFState) *httptest.Server {
 			return
 		}
 
-		if strings.HasPrefix(r.URL.Path, "/accounts/a/tokens") {
+		if r.URL.Path == "/accounts/a/tokens" {
 			var res []map[string]any
 			if state.tokenFound {
 				status := "active"
@@ -159,14 +159,19 @@ func TestCheck_K1_K3(t *testing.T) {
 		t.Fatalf("expected 1 missing input for K1, got %v", missing)
 	}
 
-	// Accept invalid token
+	// K1a: Accept invalid token -> error, keyring unchanged
 	err := missing[0].Accept("bad")
 	if err == nil {
 		t.Fatalf("expected error on accepting bad token")
 	}
+	if val, _ := kr.Get(goflare.KeyBootstrapToken); val != "" {
+		t.Fatalf("expected keyring unchanged after bad token, got %q", val)
+	}
 
 	// Accept good token
-	kr.Set(goflare.KeyBootstrapToken, "good")
+	if err := missing[0].Accept("good"); err != nil {
+		t.Fatalf("unexpected error accepting good token: %v", err)
+	}
 
 	// K2: not active
 	srvK2 := newFakeCF(fakeCFState{
@@ -198,26 +203,26 @@ func TestCheck_K4_K9(t *testing.T) {
 	kr.Set(goflare.KeyBootstrapToken, "good")
 	p := deploy.Plan{
 		Name:      "test",
-		Domain:    "example.com",
+		Domain:    "app.example.com",
 		Databases: []deploy.Database{{Name: "db1"}},
 		Buckets:   []deploy.Bucket{{Name: "bkt1"}},
 	}
 
 	state := fakeCFState{
-		verifyStatus:  "active",
-		accountCount:  1,
-		dbFound:       true,
-		bucketFound:   true,
-		zoneFound:     true,
-		tokenFound:    true,
-		tokenActive:   true,
+		verifyStatus: "active",
+		accountCount: 1,
+		dbFound:      true,
+		bucketFound:  true,
+		zoneFound:    true,
+		tokenFound:   true,
+		tokenActive:  true,
 		tokenPolicies: []map[string]any{
-			{"effect": "allow", "permission_groups": []map[string]any{{"id": "1"}}, "resources": map[string]any{"com.cloudflare.api.account.*": "*"}},
-			{"effect": "allow", "permission_groups": []map[string]any{{"id": "2"}}, "resources": map[string]any{"com.cloudflare.api.account.*": "*"}},
-			{"effect": "allow", "permission_groups": []map[string]any{{"id": "3"}}, "resources": map[string]any{"com.cloudflare.api.account.*": "*"}},
-			{"effect": "allow", "permission_groups": []map[string]any{{"id": "4"}}, "resources": map[string]any{"com.cloudflare.api.account.zone.*": "*"}},
-			{"effect": "allow", "permission_groups": []map[string]any{{"id": "5"}}, "resources": map[string]any{"com.cloudflare.api.account.zone.*": "*"}},
-			{"effect": "allow", "permission_groups": []map[string]any{{"id": "6"}}, "resources": map[string]any{"com.cloudflare.api.account.zone.*": "*"}},
+			{"effect": "allow", "permission_groups": []map[string]any{{"id": "1"}}, "resources": map[string]any{"com.cloudflare.api.account.a": "*"}},
+			{"effect": "allow", "permission_groups": []map[string]any{{"id": "2"}}, "resources": map[string]any{"com.cloudflare.api.account.a": "*"}},
+			{"effect": "allow", "permission_groups": []map[string]any{{"id": "3"}}, "resources": map[string]any{"com.cloudflare.api.account.a": "*"}},
+			{"effect": "allow", "permission_groups": []map[string]any{{"id": "4"}}, "resources": map[string]any{"com.cloudflare.api.account.zone.z": "*"}},
+			{"effect": "allow", "permission_groups": []map[string]any{{"id": "5"}}, "resources": map[string]any{"com.cloudflare.api.account.zone.z": "*"}},
+			{"effect": "allow", "permission_groups": []map[string]any{{"id": "6"}}, "resources": map[string]any{"com.cloudflare.api.account.zone.z": "*"}},
 		},
 	}
 
@@ -232,7 +237,7 @@ func TestCheck_K4_K9(t *testing.T) {
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
-	if len(missing) != 1 { // Should just be K9 now that K8 policies match
+	if len(missing) != 1 {
 		t.Fatalf("expected 1 missing (K9), got %v", missing)
 	}
 
@@ -254,13 +259,13 @@ func TestCheck_K4_K9(t *testing.T) {
 		t.Fatalf("expected ErrOneDatabaseOneBucket, got %v (missing: %v)", err, missing)
 	}
 
-	// K5, K6: missing resources
+	// K5, K6, K7, K8: missing resources
 	stateMissing := fakeCFState{verifyStatus: "active", accountCount: 1}
 	srvMissing := newFakeCF(stateMissing)
 	targetMissing, _ := goflare.NewTarget(goflare.TargetConfig{Personal: kr, RootDir: ".", BaseURL: srvMissing.URL})
 	missing, _ = targetMissing.Check(p, ci)
-	if len(missing) < 2 {
-		t.Fatalf("expected at least K5 K6 missing")
+	if len(missing) != 4 {
+		t.Fatalf("expected K5, K6, K7, K8 missing (4 items), got %d: %v", len(missing), missing)
 	}
 	srvMissing.Close()
 }

@@ -10,6 +10,7 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/textproto"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -119,11 +120,24 @@ func detectContentType(filename string) string {
 	}
 }
 
+// D1ID resolves Config.D1Name to its database ID with the CI token
+// (CLOUDFLARE_API_TOKEN). It backs `goflare d1-id`.
+func (g *Goflare) D1ID() (string, error) {
+	token, err := g.token()
+	if err != nil {
+		return "", err
+	}
+	return g.getD1ID(&CfClient{Token: token, BaseURL: g.BaseURL, HttpClient: http.DefaultClient})
+}
+
 func (g *Goflare) getD1ID(client *CfClient) (string, error) {
 	if g.Config.D1Name == "" {
-		return "", nil
+		return "", fmt.Errorf("%w (set %s)", ErrNoD1Name, EnvKeyD1Name)
 	}
-	res, err := client.get(fmt.Sprintf("/accounts/%s/d1/database?name=%s", g.Config.AccountID, g.Config.D1Name))
+	if g.Config.AccountID == "" {
+		return "", fmt.Errorf("AccountID is required (set %s env var)", EnvKeyAccountID)
+	}
+	res, err := client.get(fmt.Sprintf("/accounts/%s/d1/database?name=%s", g.Config.AccountID, url.QueryEscape(g.Config.D1Name)))
 	if err != nil {
 		return "", err
 	}
@@ -142,7 +156,7 @@ func (g *Goflare) getD1ID(client *CfClient) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("ErrD1NotFound: database '%s' not found", g.Config.D1Name)
+	return "", fmt.Errorf("%w: database '%s' not found", ErrD1NotFound, g.Config.D1Name)
 }
 
 func (g *Goflare) getWorkerSubdomain(client *CfClient) string {
@@ -262,7 +276,7 @@ func (g *Goflare) Deploy() error {
 	var bindings []any
 	if g.Config.D1Name != "" {
 		if g.Config.D1Binding == "" {
-			return fmt.Errorf("ErrBindingWithoutName: D1_NAME is set but D1_BINDING is empty")
+			return fmt.Errorf("%w: D1_NAME is set but D1_BINDING is empty", ErrBindingWithoutName)
 		}
 		dbID, err := g.getD1ID(client)
 		if err != nil {
@@ -277,7 +291,7 @@ func (g *Goflare) Deploy() error {
 
 	if g.Config.R2Bucket != "" {
 		if g.Config.R2Binding == "" {
-			return fmt.Errorf("ErrBindingWithoutName: R2_BUCKET is set but R2_BINDING is empty")
+			return fmt.Errorf("%w: R2_BUCKET is set but R2_BINDING is empty", ErrBindingWithoutName)
 		}
 		bindings = append(bindings, map[string]string{
 			"type":        "r2_bucket",

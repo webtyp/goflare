@@ -349,7 +349,7 @@ func TestDeploy_Both_ThreePhasesInOrderWithFullMetadataAndBindings(t *testing.T)
 		AccountID: "acc-123", WorkerName: "my-worker",
 		PublicDir: env.PublicDir, OutputDir: env.OutputDir,
 		D1Binding: "DB", D1Name: "d1-id-123",
-		R2Binding: "FILES", R2Bucket:   "r2-bucket-123",
+		R2Binding: "FILES", R2Bucket: "r2-bucket-123",
 	})
 	g.BaseURL = server.URL
 

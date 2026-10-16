@@ -56,8 +56,15 @@ go install webtyp.com/goflare/cmd/goflare@latest
 - `goflare auth --check`: Validate `CLOUDFLARE_API_TOKEN` from environment.
 - `goflare build`: Build edge function into `.build/` and static site assets into `web/public/`.
 - `goflare deploy`: Single path deployment to Cloudflare Workers with assets. ⚠️ Designed for CI/CD environments.
+- `goflare d1-id`: Print the ID of the D1 database named by `D1_NAME` (exit 1 when not found).
 - `goflare size`: Desglosa el tamaño del wasm del edge por paquete y lista imports prohibidos.
 - `goflare tinygo`: Instala TinyGo si falta e imprime su directorio bin y su versión.
+
+## Deploy target
+A webtyp project deploys with goflare by declaring `Target: goflare.Worker` in `config/deploy.go`.
+The person provides one **bootstrap token**; goflare creates the D1 database, the R2 bucket, the
+scoped account token and the CI secrets, and writes the Worker secrets. See
+[DEPLOY_TARGET.md](docs/DEPLOY_TARGET.md).
 
 ## GitHub Setup
 Deployment is designed to run in CI with a single action line:
@@ -69,6 +76,9 @@ Deployment is designed to run in CI with a single action line:
     worker: mi-worker
     domain: mi-worker.ejemplo.cl
     d1-binding: DB
+    d1-name: mi-worker-db
+    r2-binding: ASSETS
+    r2-bucket: mi-worker-assets
   env:
     CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
     CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -141,6 +151,11 @@ g.Deploy()
 | `Entry` | — | auto: `edge` | Convention: `edge/main.go` |
 | `PublicDir` | — | auto: `web/public` | Convention: `web/public` |
 | `Domain` | `DOMAIN` | — | optional custom domain |
+| `D1Binding` | `D1_BINDING` | — | binding name the Worker code uses; required with `D1Name` |
+| `D1Name` | `D1_NAME` | — | D1 database name; its ID is resolved at deploy |
+| `R2Binding` | `R2_BINDING` | — | binding name the Worker code uses; required with `R2Bucket` |
+| `R2Bucket` | `R2_BUCKET` | — | R2 bucket name |
+| `Vars` | `VARS` | — | non-secret variables, one `KEY=VALUE` per line |
 | `CompilerMode` | `COMPILER_MODE` | `S` | `S`=small/prod, `M`=debug, `L`=Go std |
 
 ## Testing

@@ -96,20 +96,11 @@ func LoadConfigFromEnv(path string) (*Config, error) {
 				case EnvKeyR2Bucket:
 					cfg.R2Bucket = value
 				case EnvKeyVars:
-					for _, line := range strings.Split(value, "\n") {
-						line = strings.TrimSpace(line)
-						if line == "" {
-							continue
-						}
-						parts := strings.SplitN(line, "=", 2)
-						if len(parts) != 2 {
-							return nil, fmt.Errorf("ErrInvalidVarLine: %s", line)
-						}
-						cfg.Vars = append(cfg.Vars, deploy.Var{
-							Key:   strings.TrimSpace(parts[0]),
-							Value: strings.TrimSpace(parts[1]),
-						})
+					vars, err := parseVars(value)
+					if err != nil {
+						return nil, err
 					}
+					cfg.Vars = vars
 				case EnvKeyRateLimitPer10s:
 					val, err := strconv.Atoi(value)
 					if err != nil || val < 1 {
@@ -153,23 +144,11 @@ func LoadConfigFromEnv(path string) (*Config, error) {
 		cfg.R2Bucket = os.Getenv(EnvKeyR2Bucket)
 	}
 	if len(cfg.Vars) == 0 {
-		envVars := os.Getenv(EnvKeyVars)
-		if envVars != "" {
-			for _, line := range strings.Split(envVars, "\n") {
-				line = strings.TrimSpace(line)
-				if line == "" {
-					continue
-				}
-				parts := strings.SplitN(line, "=", 2)
-				if len(parts) != 2 {
-					return nil, fmt.Errorf("ErrInvalidVarLine: %s", line)
-				}
-				cfg.Vars = append(cfg.Vars, deploy.Var{
-					Key:   strings.TrimSpace(parts[0]),
-					Value: strings.TrimSpace(parts[1]),
-				})
-			}
+		vars, err := parseVars(os.Getenv(EnvKeyVars))
+		if err != nil {
+			return nil, err
 		}
+		cfg.Vars = vars
 	}
 	if cfg.RateLimitPer10s == 0 {
 		envVal := os.Getenv(EnvKeyRateLimitPer10s)
@@ -184,6 +163,24 @@ func LoadConfigFromEnv(path string) (*Config, error) {
 
 	cfg.applyDefaults()
 	return cfg, nil
+}
+
+// parseVars reads VARS: one KEY=VALUE per line, split on the first "=".
+// Blank lines are skipped; a line without "=" is ErrInvalidVarLine.
+func parseVars(value string) ([]deploy.Var, error) {
+	var vars []deploy.Var
+	for _, line := range strings.Split(value, "\n") {
+		line = strings.TrimSuffix(line, "\r")
+		if strings.TrimSpace(line) == "" {
+			continue
+		}
+		key, val, ok := strings.Cut(line, "=")
+		if !ok {
+			return nil, fmt.Errorf("%w: %s", ErrInvalidVarLine, line)
+		}
+		vars = append(vars, deploy.Var{Key: key, Value: val})
+	}
+	return vars, nil
 }
 
 // ValidateBuild checks only what goflare build requires.

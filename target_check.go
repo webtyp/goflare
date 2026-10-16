@@ -6,265 +6,314 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sort"
+	"time"
 
 	"webtyp.com/deploy"
 	"webtyp.com/lang"
 )
 
-var requiredPermissionsNames = []string{
-	"Workers Scripts Write",
-	"D1 Write",
-	"Workers R2 Storage Write",
-	"Zone Read",
-	"Workers Routes Write",
-	"Zone WAF Write",
+// Permission group names goflare needs, resolved to IDs at run time from
+// GET /accounts/{a}/tokens/permission_groups. IDs are never hard-coded.
+const (
+	permWorkersScriptsWrite = "Workers Scripts Write"    // workers/scripts/*, workers/subdomain, assets-upload-session, secrets
+	permD1Write             = "D1 Write"                 // d1/database/* (resolve, cmd/migrate queries)
+	permR2StorageWrite      = "Workers R2 Storage Write" // R2 binding
+	permZoneRead            = "Zone Read"                // zones
+	permWorkersRoutesWrite  = "Workers Routes Write"     // workers/domains
+	permZoneWAFWrite        = "Zone WAF Write"           // zones/*/rulesets/phases/http_ratelimit/entrypoint
+)
+
+// bootstrapExpiryMargin is how close to expiry the bootstrap token is
+// reported as expiring (K2).
+const bootstrapExpiryMargin = 7 * 24 * time.Hour
+
+const (
+	resourceAccountPrefix = "com.cloudflare.api.account."
+	resourceZonePrefix    = "com.cloudflare.api.account.zone."
+)
+
+// permissionNeed is one row of requiredPermissions: a group and whether it
+// is scoped to the zone of Domain (true) or to the account (false).
+type permissionNeed struct {
+	name string
+	zone bool
 }
 
-// targetCheck contains the resolved requirements for the deploy Target.
-type targetCheck struct {
-	requiredPolicies []map[string]any
-}
-
-func (t *Target) ID() deploy.TargetID {
-	return Worker
-}
-
-func requiredPermissions(p deploy.Plan, client *CfClient) ([]map[string]any, error) {
-	res, err := client.get("/user/tokens/permission_groups")
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch permission groups: %w", err)
+func neededPermissions(p deploy.Plan) []permissionNeed {
+	needs := []permissionNeed{{permWorkersScriptsWrite, false}}
+	if len(p.Databases) > 0 {
+		needs = append(needs, permissionNeed{permD1Write, false})
 	}
+	if len(p.Buckets) > 0 {
+		needs = append(needs, permissionNeed{permR2StorageWrite, false})
+	}
+	if p.Domain != "" {
+		needs = append(needs,
+			permissionNeed{permZoneRead, true},
+			permissionNeed{permWorkersRoutesWrite, true},
+			permissionNeed{permZoneWAFWrite, true},
+		)
+	}
+	return needs
+}
 
-	var result []struct {
+// requiredPermissions returns the token policies p needs: account groups
+// scoped to accountID, zone groups scoped to zoneID (the zone of Domain).
+func requiredPermissions(p deploy.Plan, client *CfClient, accountID, zoneID string) ([]map[string]any, error) {
+	res, err := client.get(fmt.Sprintf("/accounts/%s/tokens/permission_groups", accountID))
+	if err != nil {
+		return nil, fmt.Errorf("fetch permission groups: %w", err)
+	}
+	var groups []struct {
 		ID   string `json:"id"`
 		Name string `json:"name"`
 	}
-
-	if err := json.Unmarshal(res, &result); err != nil {
-		return nil, fmt.Errorf("failed to parse permission groups: %w", err)
-	}
-
-	byName := make(map[string]string)
-	for _, g := range result {
-		byName[g.Name] = g.ID
-	}
-
-	var needs []string
-	needs = append(needs, "Workers Scripts Write")
-	if len(p.Databases) > 0 {
-		needs = append(needs, "D1 Write")
-	}
-	if len(p.Buckets) > 0 {
-		needs = append(needs, "Workers R2 Storage Write")
-	}
-	if p.Domain != "" {
-		needs = append(needs, "Zone Read", "Workers Routes Write", "Zone WAF Write")
+	if err := json.Unmarshal(res, &groups); err != nil {
+		return nil, fmt.Errorf("parse permission groups: %w", err)
 	}
 
 	var policies []map[string]any
-	for _, n := range needs {
-		id, ok := byName[n]
-		if !ok {
-			return nil, fmt.Errorf("%w: %s", ErrUnknownPermissionGroup, n)
-		}
-		var resources map[string]any
-		if n == "Zone Read" || n == "Workers Routes Write" || n == "Zone WAF Write" {
-			resources = map[string]any{
-				"com.cloudflare.api.account.zone.*": "*",
-			}
-		} else {
-			resources = map[string]any{
-				"com.cloudflare.api.account.*": "*",
+	for _, need := range neededPermissions(p) {
+		id := ""
+		for _, g := range groups {
+			if g.Name == need.name {
+				id = g.ID
+				break
 			}
 		}
-
+		if id == "" {
+			return nil, fmt.Errorf("%w: %s", ErrUnknownPermissionGroup, need.name)
+		}
+		resource := resourceAccountPrefix + accountID
+		if need.zone {
+			resource = resourceZonePrefix + zoneID
+		}
 		policies = append(policies, map[string]any{
-			"effect": "allow",
-			"permission_groups": []map[string]any{
-				{"id": id},
-			},
-			"resources": resources,
+			"effect":            "allow",
+			"permission_groups": []map[string]any{{"id": id}},
+			"resources":         map[string]any{resource: "*"},
 		})
 	}
 	return policies, nil
 }
 
-// Check probes Cloudflare for missing resources and configuration.
-func (t *Target) Check(p deploy.Plan, ci deploy.Destination) ([]deploy.Missing, error) {
-	var msgs []deploy.Missing
-
-	tokenStr, err := t.cfg.Personal.Get(KeyBootstrapToken)
-	if err != nil || tokenStr == "" {
-		msgs = append(msgs, deploy.Missing{
-			Item:   StepCreateBootstrapToken,
-			Fix:    deploy.FixInput,
-			Secret: true,
-			Accept: func(val string) error {
-				client := &CfClient{Token: val, BaseURL: t.cfg.BaseURL, HttpClient: http.DefaultClient}
-				res, err := client.get("/user/tokens/verify")
-				if err != nil {
-					return fmt.Errorf("verify failed: %w", err)
-				}
-				var result struct {
-					Status string `json:"status"`
-				}
-				if err := json.Unmarshal(res, &result); err != nil {
-					return err
-				}
-				if result.Status != "active" {
-					return fmt.Errorf("invalid token status")
-				}
-				return t.cfg.Personal.Set(KeyBootstrapToken, val)
-			},
-		})
-		return msgs, nil
+// policyGrants flattens policies into sorted "groupID resource" pairs, the
+// form in which two policy lists are compared.
+func policyGrants(policies []map[string]any) []string {
+	raw, _ := json.Marshal(policies)
+	var parsed []struct {
+		Groups []struct {
+			ID string `json:"id"`
+		} `json:"permission_groups"`
+		Resources map[string]any `json:"resources"`
 	}
+	json.Unmarshal(raw, &parsed)
+	var grants []string
+	for _, pol := range parsed {
+		for _, g := range pol.Groups {
+			for r := range pol.Resources {
+				grants = append(grants, g.ID+" "+r)
+			}
+		}
+	}
+	sort.Strings(grants)
+	return grants
+}
 
-	client := &CfClient{Token: tokenStr, BaseURL: t.cfg.BaseURL, HttpClient: http.DefaultClient}
+func policiesMatch(have, want []map[string]any) bool {
+	h, w := policyGrants(have), policyGrants(want)
+	if len(h) != len(w) {
+		return false
+	}
+	for i := range h {
+		if h[i] != w[i] {
+			return false
+		}
+	}
+	return true
+}
 
-	// K2
+func (t *Target) bootstrapMissing(item lang.Text) deploy.Missing {
+	return deploy.Missing{
+		Item:   item,
+		Why:    textBootstrapWhy,
+		Steps:  []lang.Text{textBootstrapStep1, textBootstrapStep2, textBootstrapStep3},
+		Fix:    deploy.FixInput,
+		Secret: true,
+		Accept: func(val string) error {
+			active, _, err := verifyBootstrap(t.client(val))
+			if err != nil {
+				return err
+			}
+			if !active {
+				return ErrBootstrapTokenInactive
+			}
+			return t.cfg.Personal.Set(KeyBootstrapToken, val)
+		},
+	}
+}
+
+// verifyBootstrap calls GET /user/tokens/verify. A rejected token is
+// reported as inactive, not as an error.
+func verifyBootstrap(client *CfClient) (active bool, expiresOn time.Time, err error) {
 	res, err := client.get("/user/tokens/verify")
 	if err != nil {
-		msgs = append(msgs, deploy.Missing{
-			Item:   ItemBootstrapTokenInvalid,
-			Fix:    deploy.FixInput,
-			Secret: true,
-		})
-		return msgs, nil
+		if ce, ok := err.(*cfError); ok && ce.Status < http.StatusInternalServerError {
+			return false, time.Time{}, nil
+		}
+		return false, time.Time{}, fmt.Errorf("verify bootstrap token: %w", err)
 	}
-	var verifyResult struct {
+	var v struct {
 		Status    string `json:"status"`
 		ExpiresOn string `json:"expires_on"`
 	}
-	if err := json.Unmarshal(res, &verifyResult); err != nil {
-		msgs = append(msgs, deploy.Missing{
-			Item:   ItemBootstrapTokenInvalid,
-			Fix:    deploy.FixInput,
-			Secret: true,
-		})
-		return msgs, nil
+	if err := json.Unmarshal(res, &v); err != nil {
+		return false, time.Time{}, fmt.Errorf("parse token verify: %w", err)
 	}
-	if verifyResult.Status != "active" { // Simplified expires_on check
-		msgs = append(msgs, deploy.Missing{
-			Item:   ItemBootstrapTokenInvalid,
-			Fix:    deploy.FixInput,
-			Secret: true,
-		})
-		return msgs, nil
+	if v.ExpiresOn != "" {
+		if expiresOn, err = time.Parse(time.RFC3339, v.ExpiresOn); err != nil {
+			return false, time.Time{}, fmt.Errorf("parse token expires_on %q: %w", v.ExpiresOn, err)
+		}
+	}
+	return v.Status == "active", expiresOn, nil
+}
+
+// Check probes Cloudflare for missing resources and configuration.
+func (t *Target) Check(p deploy.Plan, ci deploy.Destination) ([]deploy.Missing, error) {
+	// K1
+	token, err := t.bootstrapToken()
+	if err != nil {
+		return nil, err
+	}
+	if token == "" {
+		return []deploy.Missing{t.bootstrapMissing(textBootstrapMissing)}, nil
+	}
+	client := t.client(token)
+
+	// K2
+	active, expiresOn, err := verifyBootstrap(client)
+	if err != nil {
+		return nil, err
+	}
+	if !active {
+		return []deploy.Missing{t.bootstrapMissing(textBootstrapInvalid)}, nil
+	}
+	if !expiresOn.IsZero() && time.Until(expiresOn) <= bootstrapExpiryMargin {
+		return []deploy.Missing{t.bootstrapMissing(textBootstrapExpiring)}, nil
 	}
 
 	// K3
-	resAcct, _ := client.get("/accounts")
-	var acctResult []struct {
-		ID string `json:"id"`
+	accounts, err := listAccounts(client)
+	if err != nil {
+		return nil, err
 	}
-	json.Unmarshal(resAcct, &acctResult)
-	if len(acctResult) != 1 {
-		msgs = append(msgs, deploy.Missing{
-			Item: StepLimitAccount,
-			Fix: deploy.FixManual,
-		})
-		return msgs, nil
+	if len(accounts) != 1 {
+		return []deploy.Missing{{
+			Item:  textAccountLimit,
+			Why:   textAccountLimitWhy,
+			Steps: []lang.Text{textAccountLimitStep},
+			Fix:   deploy.FixManual,
+		}}, nil
 	}
-	accountID := acctResult[0].ID
+	accountID := accounts[0]
 
 	// K4
 	if len(p.Databases) > 1 || len(p.Buckets) > 1 {
 		return nil, ErrOneDatabaseOneBucket
 	}
 
+	var missing []deploy.Missing
+
 	// K5
 	for _, db := range p.Databases {
-		res, _ := client.get(fmt.Sprintf("/accounts/%s/d1/database?name=%s", accountID, db.Name))
-		var dbResult []struct {
-			Name string `json:"name"`
+		ok, err := d1Exists(client, accountID, db.Name)
+		if err != nil {
+			return nil, err
 		}
-		json.Unmarshal(res, &dbResult)
-		found := false
-		for _, r := range dbResult {
-			if r.Name == db.Name {
-				found = true
-				break
-			}
-		}
-		if !found {
-			msgs = append(msgs, deploy.Missing{
-				Item: lang.Text(fmt.Sprintf("create database %s", db.Name)),
-				Fix: deploy.FixAutomatic,
+		if !ok {
+			missing = append(missing, deploy.Missing{
+				Item:  textD1Missing,
+				Why:   textD1MissingWhy,
+				Steps: []lang.Text{textD1MissingStep},
+				Fix:   deploy.FixAutomatic,
 			})
 		}
 	}
 
 	// K6
 	for _, bkt := range p.Buckets {
-		_, err := client.get(fmt.Sprintf("/accounts/%s/r2/buckets/%s", accountID, bkt.Name))
+		ok, err := r2Exists(client, accountID, bkt.Name)
 		if err != nil {
-			msgs = append(msgs, deploy.Missing{
-				Item: lang.Text(fmt.Sprintf("create bucket %s", bkt.Name)),
-				Fix: deploy.FixAutomatic,
+			return nil, err
+		}
+		if !ok {
+			missing = append(missing, deploy.Missing{
+				Item:  textR2Missing,
+				Why:   textR2MissingWhy,
+				Steps: []lang.Text{textR2MissingStep},
+				Fix:   deploy.FixAutomatic,
 			})
 		}
 	}
 
 	// K7
+	zoneID := ""
 	if p.Domain != "" {
-		res, _ := client.get(fmt.Sprintf("/zones?name=%s&account.id=%s", p.Domain, accountID)) // Needs proper registrable extraction, simplify for now
-		var zResult []struct {
-			ID string `json:"id"`
+		if zoneID, err = findZone(client, accountID, p.Domain); err != nil {
+			return nil, err
 		}
-		json.Unmarshal(res, &zResult)
-		if len(zResult) == 0 {
-			msgs = append(msgs, deploy.Missing{
-				Item: StepAddDomain,
-				Fix: deploy.FixManual,
+		if zoneID == "" {
+			missing = append(missing, deploy.Missing{
+				Item:  textDomainMissing,
+				Why:   textDomainMissingWhy,
+				Steps: []lang.Text{textDomainMissingStep},
+				Fix:   deploy.FixManual,
 			})
 		}
 	}
 
 	// K8
-	policies, err := requiredPermissions(p, client)
+	policies, err := requiredPermissions(p, client, accountID, zoneID)
 	if err != nil {
 		return nil, err
 	}
-	tokenName := "webtyp-deploy-" + p.Name
-	res, _ = client.get(fmt.Sprintf("/accounts/%s/tokens", accountID))
-	var tkResult []struct {
-		Name string `json:"name"`
-		Status string `json:"status"`
-		Policies []map[string]any `json:"policies"`
+	tokens, err := tokensNamed(client, accountID, accountTokenName(p))
+	if err != nil {
+		return nil, err
 	}
-	json.Unmarshal(res, &tkResult)
-	foundTk := false
-	for _, tk := range tkResult {
-		if tk.Name == tokenName {
-			foundTk = true
-			if tk.Status != "active" {
-				foundTk = false
-			} else {
-				// Very rough heuristic for differ check.
-				if len(tk.Policies) != len(policies) {
-					foundTk = false
-				}
-			}
-			break
-		}
-	}
-	if !foundTk {
-		msgs = append(msgs, deploy.Missing{
-			Item: lang.Text("create account token"),
-			Fix: deploy.FixAutomatic,
+	if !accountTokenValid(tokens, policies) {
+		missing = append(missing, deploy.Missing{
+			Item:  textAccountTokenMissing,
+			Why:   textAccountTokenWhy,
+			Steps: []lang.Text{textAccountTokenStep},
+			Fix:   deploy.FixAutomatic,
 		})
 	}
 
 	// K9
-	hasToken, _ := ci.Has("CLOUDFLARE_API_TOKEN")
-	hasAccount, _ := ci.Has("CLOUDFLARE_ACCOUNT_ID")
+	hasToken, err := ci.Has("CLOUDFLARE_API_TOKEN")
+	if err != nil {
+		return nil, err
+	}
+	hasAccount, err := ci.Has("CLOUDFLARE_ACCOUNT_ID")
+	if err != nil {
+		return nil, err
+	}
 	if !hasToken || !hasAccount {
-		msgs = append(msgs, deploy.Missing{
-			Item: lang.Text("set CI secrets"),
-			Fix: deploy.FixAutomatic,
+		missing = append(missing, deploy.Missing{
+			Item:  textCISecretsMissing,
+			Why:   textCISecretsMissingWhy,
+			Steps: []lang.Text{textCISecretsMissingStep},
+			Fix:   deploy.FixAutomatic,
 		})
 	}
 
-	return msgs, nil
+	return missing, nil
+}
+
+// accountTokenValid reports whether exactly one token of the name exists, is
+// active and grants exactly policies.
+func accountTokenValid(tokens []accountToken, policies []map[string]any) bool {
+	return len(tokens) == 1 && tokens[0].Status == "active" && policiesMatch(tokens[0].Policies, policies)
 }

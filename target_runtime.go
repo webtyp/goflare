@@ -7,33 +7,61 @@ import (
 	"encoding/json"
 	"fmt"
 	"mime/multipart"
-	"net/http"
 	"net/textproto"
 
 	"webtyp.com/deploy"
 )
 
+// placeholderWorker is uploaded, as Wrangler does, when a secret is put
+// before the first deploy. The first real deploy replaces the script and
+// Cloudflare keeps its secret_text bindings.
+const placeholderWorker = `export default { fetch() { return new Response("", {status: 503}) } }`
+
+// runtimeDestination puts Worker secrets with the person's bootstrap token,
+// never the CI token. err holds a session failure, returned by every call.
 type runtimeDestination struct {
 	client    *CfClient
 	accountID string
 	script    string
+	err       error
+}
+
+func (r *runtimeDestination) secretsPath() string {
+	return fmt.Sprintf("/accounts/%s/workers/scripts/%s/secrets", r.accountID, r.script)
+}
+
+// secretNames lists the Worker's secret names; exists is false when the
+// script does not exist yet.
+func (r *runtimeDestination) secretNames() (names []string, exists bool, err error) {
+	if r.err != nil {
+		return nil, false, r.err
+	}
+	res, err := r.client.get(r.secretsPath())
+	if err != nil {
+		if isNotFound(err) {
+			return nil, false, nil
+		}
+		return nil, false, fmt.Errorf("list Worker secrets: %w", err)
+	}
+	var secrets []struct {
+		Name string `json:"name"`
+	}
+	if err := json.Unmarshal(res, &secrets); err != nil {
+		return nil, false, fmt.Errorf("parse Worker secrets: %w", err)
+	}
+	for _, s := range secrets {
+		names = append(names, s.Name)
+	}
+	return names, true, nil
 }
 
 func (r *runtimeDestination) Has(key string) (bool, error) {
-	res, err := r.client.get(fmt.Sprintf("/accounts/%s/workers/scripts/%s/secrets", r.accountID, r.script))
+	names, _, err := r.secretNames()
 	if err != nil {
-		return false, nil // Script not found
+		return false, err
 	}
-
-	var result []struct{
-		Name string `json:"name"`
-	}
-	if err := json.Unmarshal(res, &result); err != nil {
-		return false, nil
-	}
-
-	for _, sec := range result {
-		if sec.Name == key {
+	for _, n := range names {
+		if n == key {
 			return true, nil
 		}
 	}
@@ -41,75 +69,64 @@ func (r *runtimeDestination) Has(key string) (bool, error) {
 }
 
 func (r *runtimeDestination) Put(key, value string) error {
-	// Check if script exists
-	_, err := r.client.get(fmt.Sprintf("/accounts/%s/workers/scripts/%s/secrets", r.accountID, r.script))
+	_, exists, err := r.secretNames()
 	if err != nil {
-		// Upload placeholder worker
-		const placeholder = `export default { fetch() { return new Response("", {status: 503}) } }`
-
-		var buf bytes.Buffer
-		mw := multipart.NewWriter(&buf)
-
-		metadata := map[string]any{
-			"main_module": "index.js",
-		}
-		metadataJSON, _ := json.Marshal(metadata)
-
-		// Metadata part
-		metaHeader := make(textproto.MIMEHeader)
-		metaHeader.Set("Content-Disposition", `form-data; name="metadata"`)
-		metaHeader.Set("Content-Type", "application/json")
-		metaPart, _ := mw.CreatePart(metaHeader)
-		metaPart.Write(metadataJSON)
-
-		// Script part
-		scriptHeader := make(textproto.MIMEHeader)
-		scriptHeader.Set("Content-Disposition", `form-data; name="index.js"; filename="index.js"`)
-		scriptHeader.Set("Content-Type", "application/javascript+module")
-		scriptPart, _ := mw.CreatePart(scriptHeader)
-		scriptPart.Write([]byte(placeholder))
-
-		mw.Close()
-
-		_, err := r.client.putMultipart(fmt.Sprintf("/accounts/%s/workers/scripts/%s", r.accountID, r.script), &buf, mw.FormDataContentType())
-		if err != nil {
-			return fmt.Errorf("failed to upload placeholder script: %w", err)
+		return err
+	}
+	if !exists {
+		if err := r.uploadPlaceholder(); err != nil {
+			return err
 		}
 	}
-
-	// Put the secret
-	secBody, _ := json.Marshal(map[string]string{
+	body, err := json.Marshal(map[string]string{
 		"name": key,
 		"text": value,
 		"type": "secret_text",
 	})
-	_, err = r.client.put(fmt.Sprintf("/accounts/%s/workers/scripts/%s/secrets", r.accountID, r.script), secBody)
 	if err != nil {
-		return fmt.Errorf("failed to put secret: %w", err)
+		return err
 	}
-
+	if _, err := r.client.put(r.secretsPath(), body); err != nil {
+		return fmt.Errorf("put Worker secret %s: %w", key, err)
+	}
 	return nil
 }
 
-// Runtime is where ToRuntime secrets go.
+func (r *runtimeDestination) uploadPlaceholder() error {
+	var buf bytes.Buffer
+	mw := multipart.NewWriter(&buf)
+	metadata, err := json.Marshal(map[string]any{
+		"main_module":        "index.js",
+		"compatibility_date": DefaultCompatibilityDate,
+	})
+	if err != nil {
+		return err
+	}
+	if err := mw.WriteField("metadata", string(metadata)); err != nil {
+		return err
+	}
+	h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition", `form-data; name="index.js"; filename="index.js"`)
+	h.Set("Content-Type", contentTypeESModule)
+	part, err := mw.CreatePart(h)
+	if err != nil {
+		return err
+	}
+	if _, err := part.Write([]byte(placeholderWorker)); err != nil {
+		return err
+	}
+	if err := mw.Close(); err != nil {
+		return err
+	}
+	path := fmt.Sprintf("/accounts/%s/workers/scripts/%s", r.accountID, r.script)
+	if _, err := r.client.putMultipart(path, &buf, mw.FormDataContentType()); err != nil {
+		return fmt.Errorf("upload placeholder Worker: %w", err)
+	}
+	return nil
+}
+
+// Runtime is where ToRuntime secrets go: the Worker's secrets.
 func (t *Target) Runtime(p deploy.Plan) deploy.Destination {
-	tokenStr, _ := t.cfg.Personal.Get(KeyBootstrapToken)
-	client := &CfClient{Token: tokenStr, BaseURL: t.cfg.BaseURL, HttpClient: http.DefaultClient}
-
-	// Need accountID. Best effort via /accounts if not cached
-	resAcct, _ := client.get("/accounts")
-	var acctResult []struct{
-		ID string `json:"id"`
-	}
-	json.Unmarshal(resAcct, &acctResult)
-	var accountID string
-	if len(acctResult) == 1 {
-		accountID = acctResult[0].ID
-	}
-
-	return &runtimeDestination{
-		client: client,
-		accountID: accountID,
-		script: p.Name,
-	}
+	client, accountID, err := t.session()
+	return &runtimeDestination{client: client, accountID: accountID, script: p.Name, err: err}
 }

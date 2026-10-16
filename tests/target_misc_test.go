@@ -7,8 +7,10 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -27,8 +29,16 @@ func TestRuntime_W1_W2(t *testing.T) {
 	var requests []string
 	var secretBody []byte
 
+	const secretValue = "my-secret-val"
+
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		requests = append(requests, r.Method+" "+r.URL.Path)
+		body, _ := io.ReadAll(r.Body)
+		isSecretPut := r.URL.Path == "/accounts/a/workers/scripts/test-script/secrets" && r.Method == http.MethodPut
+		// W2: the value travels only in the body of the secrets PUT.
+		if !isSecretPut && strings.Contains(r.URL.String()+string(body), secretValue) {
+			t.Errorf("W2 failed: secret value found in %s %s", r.Method, r.URL)
+		}
 		if r.URL.Path == "/accounts" {
 			json.NewEncoder(w).Encode(map[string]any{"success": true, "result": []map[string]any{{"id": "a"}}})
 			return
@@ -39,16 +49,11 @@ func TestRuntime_W1_W2(t *testing.T) {
 			return
 		}
 		if r.URL.Path == "/accounts/a/workers/scripts/test-script" && r.Method == http.MethodPut {
-			// W1: Check that body doesn't contain actual secrets, just the placeholder
-			body, _ := io.ReadAll(r.Body)
-			if strings.Contains(string(body), "my-secret-val") {
-				t.Errorf("W2 failed: secret value found in script upload body")
-			}
 			json.NewEncoder(w).Encode(map[string]any{"success": true})
 			return
 		}
 		if r.URL.Path == "/accounts/a/workers/scripts/test-script/secrets" && r.Method == http.MethodPut {
-			secretBody, _ = io.ReadAll(r.Body)
+			secretBody = body
 			json.NewEncoder(w).Encode(map[string]any{"success": true})
 			return
 		}
@@ -67,7 +72,7 @@ func TestRuntime_W1_W2(t *testing.T) {
 		t.Fatalf("expected Has to return false for missing script")
 	}
 
-	err = dest.Put("MY_SEC", "my-secret-val")
+	err = dest.Put("MY_SEC", secretValue)
 	if err != nil {
 		t.Fatalf("unexpected Put error: %v", err)
 	}
@@ -83,8 +88,8 @@ func TestRuntime_W1_W2(t *testing.T) {
 		t.Fatalf("W1 failed: missing script upload request")
 	}
 
-	// Verify W2: log line/body doesn't contain secret (we already checked body in handler, check parsed sec body here)
-	if !strings.Contains(string(secretBody), "my-secret-val") {
+	// The secrets PUT itself must carry the value.
+	if !strings.Contains(string(secretBody), secretValue) {
 		t.Fatalf("expected secret body to contain value, got %s", secretBody)
 	}
 }
@@ -158,6 +163,8 @@ func TestConfig_C1_C2_V1_V2(t *testing.T) {
 	// Setup env
 	os.Setenv("D1_BINDING", "DB")
 	os.Setenv("D1_NAME", "my-d1")
+	os.Setenv("CLOUDFLARE_ACCOUNT_ID", "a")
+	defer os.Unsetenv("CLOUDFLARE_ACCOUNT_ID")
 	os.Setenv("VARS", "K1=V1\nK2=V2\nINVALID")
 	defer os.Unsetenv("D1_BINDING")
 	defer os.Unsetenv("D1_NAME")
@@ -212,5 +219,77 @@ func TestConfig_C1_C2_V1_V2(t *testing.T) {
 	err = g2.Deploy()
 	if err == nil || !strings.Contains(err.Error(), "ErrD1NotFound") {
 		t.Fatalf("expected ErrD1NotFound, got %v", err)
+	}
+}
+
+// rewriteTransport sends every request to the fake Cloudflare server.
+type rewriteTransport struct{ target *url.URL }
+
+func (rt rewriteTransport) RoundTrip(r *http.Request) (*http.Response, error) {
+	r = r.Clone(r.Context())
+	r.URL.Scheme = rt.target.Scheme
+	r.URL.Host = rt.target.Host
+	return http.DefaultTransport.RoundTrip(r)
+}
+
+func TestRunD1ID_C2(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/client/v4/accounts/a/d1/database" || r.URL.Query().Get("name") != "my-d1" {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		json.NewEncoder(w).Encode(map[string]any{"success": true, "result": []map[string]any{
+			{"name": "my-d1-other", "uuid": "wrong"},
+			{"name": "my-d1", "uuid": "uuid-123"},
+		}})
+	}))
+	defer srv.Close()
+	target, _ := url.Parse(srv.URL)
+
+	orig := http.DefaultClient.Transport
+	http.DefaultClient.Transport = rewriteTransport{target: target}
+	defer func() { http.DefaultClient.Transport = orig }()
+
+	t.Setenv("CLOUDFLARE_API_TOKEN", "tok")
+	t.Setenv("CLOUDFLARE_ACCOUNT_ID", "a")
+	t.Setenv("D1_BINDING", "DB")
+	t.Setenv("D1_NAME", "my-d1")
+	t.Setenv("PROJECT_NAME", "test")
+
+	var out strings.Builder
+	if err := goflare.RunD1ID("", &out); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if out.String() != "uuid-123\n" {
+		t.Fatalf("expected only the ID on stdout, got %q", out.String())
+	}
+
+	// Not found: error and nothing on stdout.
+	t.Setenv("D1_NAME", "missing")
+	out.Reset()
+	if err := goflare.RunD1ID("", &out); err == nil {
+		t.Fatalf("expected error for unknown database")
+	}
+	if out.Len() != 0 {
+		t.Fatalf("expected empty stdout on error, got %q", out.String())
+	}
+}
+
+func TestActionYml_A1(t *testing.T) {
+	raw, err := os.ReadFile(filepath.Join("..", goflare.ActionFilePath))
+	if err != nil {
+		t.Fatal(err)
+	}
+	action := string(raw)
+	for _, want := range []string{"  d1-name:", "  r2-bucket:", "  vars:", "D1_NAME:", "R2_BUCKET:", "VARS:"} {
+		if !strings.Contains(action, want) {
+			t.Errorf("action.yml lacks %q", want)
+		}
+	}
+	// The ID-by-hand inputs are gone; the database ID only reaches
+	// pre-deploy through `goflare d1-id`.
+	removed := regexp.MustCompile(`(?i)(d1[-_]database[-_]name|r2[-_]bucket[-_](id|name)|secrets\.d1[-_]database[-_]id|d1-database-id)`)
+	if m := removed.FindString(action); m != "" {
+		t.Errorf("action.yml still carries %q", m)
 	}
 }

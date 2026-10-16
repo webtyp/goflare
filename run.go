@@ -181,34 +181,14 @@ func RunDeploy(envPath string, out io.Writer) error {
 	return nil
 }
 
-// RunD1ID runs the d1-id subcommand.
+// RunD1ID runs the d1-id subcommand: prints the ID of the D1 database named
+// D1_NAME. Not found or D1_NAME empty → error (exit 1).
 func RunD1ID(envPath string, out io.Writer) error {
 	cfg, err := LoadConfigFromEnv(envPath)
 	if err != nil {
 		return err
 	}
-	if cfg.D1Name == "" {
-		return nil // Not an error to not have a database.
-	}
-	if cfg.AccountID == "" {
-		return fmt.Errorf("AccountID is required (set CLOUDFLARE_ACCOUNT_ID env var)")
-	}
-
-	g := New(cfg)
-	if err := g.Auth(); err != nil {
-		return err
-	}
-	token, err := g.token()
-	if err != nil {
-		return err
-	}
-	client := &CfClient{
-		Token:      token,
-		BaseURL:    g.BaseURL,
-		HttpClient: http.DefaultClient,
-	}
-
-	id, err := g.getD1ID(client)
+	id, err := New(cfg).D1ID()
 	if err != nil {
 		return err
 	}

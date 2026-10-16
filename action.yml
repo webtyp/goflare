@@ -184,10 +184,13 @@ runs:
       shell: bash
       run: |
         if [ -n "${{ inputs.d1-name }}" ]; then
-          D1_DATABASE_ID="$(goflare d1-id)" ${{ inputs.pre-deploy }}
+          d1_id="$(goflare d1-id)"
+          D1_DATABASE_ID="$d1_id" ${{ inputs.pre-deploy }}
         else
           ${{ inputs.pre-deploy }}
         fi
+      env:
+        D1_NAME: '${{ inputs.d1-name }}'
     - name: goflare deploy
       if: 'inputs.deploy == ''true'''
       shell: bash
