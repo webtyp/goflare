@@ -44,9 +44,7 @@ require (
 	webtyp.com/font v0.0.5 // indirect
 	webtyp.com/image v0.1.16 // indirect
 	webtyp.com/js v0.1.0 // indirect
-	webtyp.com/jsvalue v0.1.6 // indirect
-	webtyp.com/orm v0.12.8 // indirect
-	webtyp.com/storage v0.1.4 // indirect
+	webtyp.com/storage v0.1.7 // indirect
 )
 
 require (
