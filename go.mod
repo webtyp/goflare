@@ -51,10 +51,10 @@ require (
 	github.com/tdewolff/parse/v2 v2.8.11 // indirect
 	webtyp.com/context v0.0.23 // indirect
 	webtyp.com/css v0.4.30 // indirect
-	webtyp.com/dom v0.13.25 // indirect
+	webtyp.com/dom v0.13.26 // indirect
 	webtyp.com/html v0.0.27 // indirect
 	webtyp.com/json v0.5.29 // indirect
 	webtyp.com/model v0.2.4
 	webtyp.com/router v0.4.3
-	webtyp.com/svg v0.3.14 // indirect
+	webtyp.com/svg v0.3.30 // indirect
 )
