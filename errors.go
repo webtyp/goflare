@@ -5,6 +5,8 @@ package goflare
 import "errors"
 
 var (
+	ErrBrowserTagForbidden = errors.New("goflare: the Cloudflare Worker cannot be compiled with -tags browser")
+
 	ErrD1NotFound             = errors.New("ErrD1NotFound")
 	ErrBindingWithoutName     = errors.New("ErrBindingWithoutName")
 	ErrOneDatabaseOneBucket   = errors.New("ErrOneDatabaseOneBucket")

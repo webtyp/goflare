@@ -30,8 +30,8 @@ func TestBuildWorkerAssets_SingleArtifact(t *testing.T) {
 		t.Run("Import_"+imp, func(t *testing.T) {
 			t.Setenv("GOWORK", "off")
 			tmpDir := t.TempDir()
-			entryDir := filepath.Join(tmpDir, "edge")
-			outputDir := filepath.Join(tmpDir, ".build")
+			entryDir := filepath.Join(tmpDir, "web")
+			outputDir := filepath.Join(tmpDir, "web")
 			if err := os.MkdirAll(entryDir, 0755); err != nil {
 				t.Fatal(err)
 			}
@@ -70,12 +70,12 @@ func TestBuildWorkerAssets_SingleArtifact(t *testing.T) {
 import _ "` + imp + `"
 func main() {}
 `
-			if err := os.WriteFile(filepath.Join(entryDir, "main.go"), []byte(mainContent), 0644); err != nil {
+			if err := os.WriteFile(filepath.Join(entryDir, "edge.go"), []byte(mainContent), 0644); err != nil {
 				t.Fatal(err)
 			}
 
 			cfg := &goflare.Config{
-				Entry:     entryDir,
+				Entry:     filepath.Join(entryDir, "edge.go"),
 				OutputDir: outputDir,
 			}
 			g := goflare.New(cfg)
@@ -118,18 +118,18 @@ func main() {}
 
 func TestBuildWorkerAssets_UnknownImportFails(t *testing.T) {
 	tmpDir := t.TempDir()
-	entryDir := filepath.Join(tmpDir, "edge")
-	outputDir := filepath.Join(tmpDir, ".build")
+	entryDir := filepath.Join(tmpDir, "web")
+	outputDir := filepath.Join(tmpDir, "web")
 	os.MkdirAll(entryDir, 0755)
 
 	mainContent := `package main
 import "fmt"
 func main() { fmt.Println("hi") }
 `
-	os.WriteFile(filepath.Join(entryDir, "main.go"), []byte(mainContent), 0644)
+	os.WriteFile(filepath.Join(entryDir, "edge.go"), []byte(mainContent), 0644)
 
 	cfg := &goflare.Config{
-		Entry:     entryDir,
+		Entry:     filepath.Join(entryDir, "edge.go"),
 		OutputDir: outputDir,
 	}
 	g := goflare.New(cfg)

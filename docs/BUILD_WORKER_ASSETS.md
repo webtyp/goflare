@@ -6,18 +6,18 @@
 
 ## Modos de proyecto y artefactos
 
-Cualquier proyecto con `edge/main.go` genera exactamente el mismo par de artefactos en `.build/`:
+Cualquier proyecto con `web/edge.go` genera exactamente el mismo par de artefactos en `web/`:
 
-- `.build/edge.js` — el pegamento JavaScript empaquetado y minificado.
-- `.build/edge.wasm` — el binario compilado de Go (goflare valida el presupuesto de 900 KiB crudo).
+- `web/edge.js` — el pegamento JavaScript empaquetado y minificado.
+- `web/edge.wasm` — el binario compilado de Go (goflare valida el presupuesto de 900 KiB crudo).
 
 Si el proyecto contiene `web/public/`, sus archivos se procesan como assets estáticos.
 
 | Estructura del proyecto | Assets | Script Worker |
 |---|---|---|
-| Sitio estático (sin `edge/main.go`) | Sí | No |
-| App con servidor (`edge/main.go` + `web/public/`) | Sí | Sí |
-| Worker sin frontend (`edge/main.go` sin `web/public/`) | No | Sí |
+| Sitio estático (sin `web/edge.go`) | Sí | No |
+| App con servidor (`web/edge.go` + `web/public/`) | Sí | Sí |
+| Worker sin frontend (`web/edge.go` sin `web/public/`) | No | Sí |
 
 ---
 
@@ -32,7 +32,7 @@ El despliegue combina la API Direct Upload de Assets de Cloudflare Workers con e
    Si Cloudflare solicita subir archivos (buckets no vacíos), `goflare` sube los datos codificados en base64 usando el JWT obtenido en la Fase 1 como cabecera de autorización. Devuelve un **token de finalización** (validado por 1 hora).
 
 3. **Fase 3 — Despliegue del Worker (`PUT /accounts/.../workers/scripts/{script_name}`):**
-   Envía la petición multipart/form-data con los artefactos `.build/edge.js` y `.build/edge.wasm`, junto al campo `metadata` configurado:
+   Envía la petición multipart/form-data con los artefactos `web/edge.js` y `web/edge.wasm`, junto al campo `metadata` configurado:
 
 ```json
 {

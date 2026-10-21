@@ -203,13 +203,13 @@ func TestConfig_C1_C2_V1_V2(t *testing.T) {
 
 	// Need valid Deploy config
 	cfg.ProjectName = "test"
-	cfg.Entry = "edge"
+	cfg.Entry = "web/edge.go"
 	t.Chdir(t.TempDir())
-	os.MkdirAll("edge", 0755)
-	os.WriteFile("edge/main.go", []byte("package main\nfunc main(){}"), 0644)
-	os.MkdirAll(".build", 0755)
-	os.WriteFile(".build/edge.js", []byte(""), 0644)
-	os.WriteFile(".build/edge.wasm", []byte(""), 0644)
+	os.MkdirAll("web", 0755)
+	os.WriteFile("web/edge.go", []byte("package main\nfunc main(){}"), 0644)
+	os.MkdirAll("web", 0755)
+	os.WriteFile("web/edge.js", []byte(""), 0644)
+	os.WriteFile("web/edge.wasm", []byte(""), 0644)
 
 	g2 := goflare.New(cfg)
 	g2.BaseURL = srvErr.URL

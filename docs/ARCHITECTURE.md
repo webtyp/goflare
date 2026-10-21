@@ -39,8 +39,8 @@ GoFlare is a Go library and CLI that bridges the gap between Go source code and 
   caller and was removed; a key-value store, when one is needed, is `webtyp.com/kvdb`.
 
 ### 3. Build Pipeline (`build.go`, `mode.go`, `javascripts.go`, `wasm.go`)
-- **Entry Validation (`mode.go`):** `validateEntry()` verifies `edge/main.go` imports `webtyp/cloudflare/edge` or `webtyp/cloudflare/workers` (legacy `webtyp/goflare/edge` aceptado durante migración).
-- **Worker Build:** Produces `.build/edge.js` (bundled from `webtyp/cloudflare/assets` via `javascripts.go`) and `.build/edge.wasm`.
+- **Entry Validation (`mode.go`):** `validateEntry()` verifies `web/edge.go` imports `webtyp/cloudflare/edge` or `webtyp/cloudflare/workers` (legacy `webtyp/goflare/edge` aceptado durante migración).
+- **Worker Build:** Produces `web/edge.js` (bundled from `webtyp/cloudflare/assets` via `javascripts.go`) and `web/edge.wasm`.
 - **Static Site Build:** Delegates static site compilation to `sitec.Build` via a pluggable `SiteBuilder` seam. `sitec` scans project packages for declared producers, compiles frontend WASM if `web/client.go` exists, and emits static assets to `web/public/`.
 
 ### 4. Authentication (`auth.go`)
@@ -64,7 +64,7 @@ goflare/
 ├── goflare.go          # Core Goflare struct and entry points
 ├── config.go           # Configuration loading and validation
 ├── store.go            # Memory storage abstraction
-├── mode.go             # Entry validation for edge/main.go imports (webtyp/cloudflare)
+├── mode.go             # Entry validation for web/edge.go imports (webtyp/cloudflare)
 ├── build.go            # Build orchestration
 ├── assets.go           # Asset hashing, manifest generation, and bucket upload
 ├── auth.go             # Cloudflare authentication logic
@@ -90,7 +90,7 @@ goflare/
 ## Design Principles
 
 - **Single Deployment Path:** Every project deploys as a Cloudflare Worker with static assets.
-- **Convention over Configuration:** Output directory is `.build/`. Entry points (`edge/main.go`) and public directories (`web/public/`) are auto-detected by convention.
+- **Convention over Configuration:** Output directory is `web/`. Entry points (`web/edge.go`) and public directories (`web/public/`) are auto-detected by convention.
 - **Minimal binary in wasm code:** Files compiled to WASM (`edge/`, `workers/`, `cloudflare/env_wasm.go`) NEVER import heavy stdlib. Use `webtyp/*` equivalents instead.
 - **Platform Secrets (never in `.env`):** `CLOUDFLARE_API_TOKEN` is provided via environment variables, ideally managed as GitHub Secrets.
 - **Self-Contained:** No external tools like Node.js or Wrangler required.

@@ -31,8 +31,8 @@ flowchart TD
         CMD_BUILD --> READ_ENV_B["Read .env / OS env"]:::env
         READ_ENV_B --> DETECT["Convention detection: edge/, web/public/"]:::detect
 
-        DETECT --> HAS_BACK{"edge/main.go?"}:::detect
-        HAS_BACK -->|Sí| TINYGO["tinygo build → .build/"]:::compile
+        DETECT --> HAS_BACK{"web/edge.go?"}:::detect
+        HAS_BACK -->|Sí| TINYGO["tinygo build → web/"]:::compile
         HAS_BACK -->|No| SKIP_W["Worker: skip"]:::detect
 
         DETECT --> HAS_FRONT{"web/public/?"}:::detect

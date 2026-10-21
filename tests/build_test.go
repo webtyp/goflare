@@ -5,6 +5,7 @@ package goflare_test
 import (
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"webtyp.com/goflare"
@@ -77,6 +78,23 @@ func TestBuild_MissingPublicDir(t *testing.T) {
 	err := g.Build()
 	if err == nil {
 		t.Fatal("Expected error when PublicDir does not exist")
+	}
+}
+
+func TestBuild_BrowserTagForbidden(t *testing.T) {
+	cfg := &goflare.Config{
+		ProjectName: "test",
+		AccountID:   "123",
+		Entry:       "web/edge.go",
+	}
+	os.Setenv("GOFLAGS", "-tags=browser")
+	defer os.Unsetenv("GOFLAGS")
+	err := cfg.ValidateBuild()
+	if err == nil {
+		t.Fatal("Expected error when browser tag is used")
+	}
+	if !strings.Contains(err.Error(), "goflare: the Cloudflare Worker cannot be compiled with -tags browser") {
+		t.Errorf("Expected error to contain browser tag forbidden message, got %v", err)
 	}
 }
 
