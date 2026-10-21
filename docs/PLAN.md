@@ -2,8 +2,10 @@
 PLAN: "refactor!: build Worker from web/edge.go into web/ (OutputDir default web/), reject -tags browser"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 6212008180401272509
+PR: https://github.com/webtyp/goflare/pull/31
+REVIEWED_COMMIT: 2fdd45c29b1b9d8aa951f06fa9c4be92b8c87be4
 ---
 
 > Read AGENTS.md at the repo root before any change.
