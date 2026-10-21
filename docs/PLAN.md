@@ -2,6 +2,8 @@
 PLAN: "refactor!: build Worker from web/edge.go into web/ (OutputDir default web/), reject -tags browser"
 EXECUTOR: jules
 REVIEWER: none
+STATUS: running
+SESSION: 6212008180401272509
 ---
 
 > Read AGENTS.md at the repo root before any change.
