@@ -191,8 +191,8 @@ func TestBuild_JSBundleMarkerReplaced(t *testing.T) {
 	repoRoot := filepath.Dir(cwd)
 
 	tmpDir := t.TempDir()
-	entryDir := filepath.Join(tmpDir, "edge")
-	outputDir := filepath.Join(tmpDir, ".build")
+	entryDir := filepath.Join(tmpDir, "web")
+	outputDir := filepath.Join(tmpDir, "web")
 	os.MkdirAll(entryDir, 0755)
 
 	modBytes, _ := os.ReadFile(filepath.Join(repoRoot, "go.mod"))
@@ -222,10 +222,10 @@ func TestBuild_JSBundleMarkerReplaced(t *testing.T) {
 import _ "webtyp.com/cloudflare/edge"
 func main() {}
 `
-	os.WriteFile(filepath.Join(entryDir, "main.go"), []byte(mainContent), 0644)
+	os.WriteFile(filepath.Join(entryDir, "edge.go"), []byte(mainContent), 0644)
 
 	cfg := &goflare.Config{
-		Entry:     entryDir,
+		Entry:     filepath.Join(entryDir, "edge.go"),
 		OutputDir: outputDir,
 	}
 	g := goflare.New(cfg)

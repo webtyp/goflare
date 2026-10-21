@@ -52,11 +52,12 @@ func main() {}`,
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			tmp := t.TempDir()
-			entry := filepath.Join(tmp, "edge")
+			webDir := filepath.Join(tmp, "web")
+			entry := filepath.Join(webDir, "edge.go")
 
 			if tt.mainGo != "" {
-				os.MkdirAll(entry, 0755)
-				os.WriteFile(filepath.Join(entry, "main.go"), []byte(tt.mainGo), 0644)
+				os.MkdirAll(webDir, 0755)
+				os.WriteFile(entry, []byte(tt.mainGo), 0644)
 			}
 
 			err := validateEntry(entry)

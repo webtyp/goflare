@@ -189,6 +189,9 @@ func (c *Config) ValidateBuild() error {
 	if c.Entry == "" && c.PublicDir == "" {
 		return fmt.Errorf("nothing to build: Entry and PublicDir are both empty")
 	}
+	if strings.Contains(os.Getenv("GOFLAGS"), "browser") {
+		return fmt.Errorf("%w", ErrBrowserTagForbidden)
+	}
 	return nil
 }
 
@@ -214,7 +217,7 @@ func (c *Config) applyDefaults() {
 		c.RootDir = DefaultRootDir
 	}
 	if c.OutputDir == "" {
-		c.OutputDir = ".build/"
+		c.OutputDir = "web"
 	}
 	if c.CompilerMode == "" {
 		c.CompilerMode = "S"
@@ -222,8 +225,8 @@ func (c *Config) applyDefaults() {
 
 	// Auto-detect edge function entry (convention).
 	if c.Entry == "" {
-		if _, err := os.Stat(filepath.Join("edge", "main.go")); err == nil {
-			c.Entry = "edge"
+		if _, err := os.Stat(filepath.Join("web", "edge.go")); err == nil {
+			c.Entry = filepath.Join("web", "edge.go")
 		}
 	}
 

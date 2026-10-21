@@ -8,7 +8,6 @@ import (
 	"go/parser"
 	"go/token"
 	"os"
-	"path/filepath"
 	"strconv"
 )
 
@@ -20,18 +19,17 @@ const (
 	LegacyImportEdge    = "webtyp.com/goflare/edge"
 	LegacyImportWorkers = "webtyp.com/goflare/workers"
 
-	ErrNoKnownImport = "cannot infer mode: edge/main.go imports neither " + ImportEdge + " nor " + ImportWorkers
+	ErrNoKnownImport = "cannot infer mode: web/edge.go imports neither " + ImportEdge + " nor " + ImportWorkers
 )
 
-// validateEntry confirms that edge/main.go imports at least one of the known runtime packages.
+// validateEntry confirms that web/edge.go imports at least one of the known runtime packages.
 func validateEntry(entry string) error {
-	mainGo := filepath.Join(entry, "main.go")
-	if _, err := os.Stat(mainGo); errors.Is(err, os.ErrNotExist) {
-		return fmt.Errorf("entry main.go does not exist: %s", mainGo)
+	if _, err := os.Stat(entry); errors.Is(err, os.ErrNotExist) {
+		return fmt.Errorf("entry go file does not exist: %s", entry)
 	}
 
 	fset := token.NewFileSet()
-	f, err := parser.ParseFile(fset, mainGo, nil, parser.ImportsOnly)
+	f, err := parser.ParseFile(fset, entry, nil, parser.ImportsOnly)
 	if err != nil {
 		return err
 	}

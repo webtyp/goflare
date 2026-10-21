@@ -4,6 +4,7 @@ package goflare
 
 import (
 	"os"
+	"path/filepath"
 	"runtime/debug"
 	"time"
 
@@ -124,7 +125,7 @@ func New(cfg *Config) *Goflare {
 	// persists the choice to disk storage so a stale previous mode does
 	// not silently override it.
 	edgeBuilder := sitec.NewWasmBuilder(false, sitec.WasmBuildOptions{
-		Entry:      "main.go",
+		Entry:      filepath.Join("web", "edge.go"),
 		OutputName: "edge",
 	})
 

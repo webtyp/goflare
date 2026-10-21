@@ -35,6 +35,6 @@
 
 | Item | Path |
 |---|---|
-| Go Entry | `edge/main.go` |
+| Go Entry | `web/edge.go` |
 | Public Assets | `web/public/` |
-| Build Artifacts | `.build/` |
+| Build Artifacts | `web/` |
