@@ -5,7 +5,7 @@ REVIEWER: none
 STATUS: review
 SESSION: 6212008180401272509
 PR: https://github.com/webtyp/goflare/pull/31
-REVIEWED_COMMIT: 2fdd45c29b1b9d8aa951f06fa9c4be92b8c87be4
+REVIEWED_COMMIT: 72f6a4778ac4819b436b3ca9ca99f55bae9aadb6
 ---
 
 > Read AGENTS.md at the repo root before any change.
