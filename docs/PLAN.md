@@ -2,6 +2,8 @@
 PLAN: "fix: exact -tags browser guard; action.yml no longer bakes a release tag"
 EXECUTOR: jules
 REVIEWER: none
+STATUS: running
+SESSION: 11844681467837142147
 ---
 
 > Read AGENTS.md at the repo root before any change.
