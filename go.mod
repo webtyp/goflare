@@ -11,11 +11,11 @@ require (
 	webtyp.com/git v0.0.8
 	webtyp.com/gobuild v0.0.28
 	webtyp.com/keyring v0.2.9
-	webtyp.com/lang v0.1.6
+	webtyp.com/lang v0.1.7
 	webtyp.com/modfind v0.0.11
 	webtyp.com/pwa v0.2.0
 	webtyp.com/server v0.2.86
-	webtyp.com/sitec v0.2.50
+	webtyp.com/sitec v0.2.66
 	webtyp.com/sqlt v0.0.11
 	webtyp.com/tinygo v1.0.1
 )
