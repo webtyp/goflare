@@ -15,7 +15,7 @@ require (
 	webtyp.com/modfind v0.0.11
 	webtyp.com/pwa v0.2.0
 	webtyp.com/server v0.2.86
-	webtyp.com/sitec v0.2.66
+	webtyp.com/sitec v0.2.68
 	webtyp.com/sqlt v0.0.11
 	webtyp.com/tinygo v1.0.1
 )
