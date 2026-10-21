@@ -6,7 +6,7 @@ require (
 	github.com/tdewolff/minify/v2 v2.24.12
 	webtyp.com/cloudflare v0.0.39
 	webtyp.com/ddl v0.0.15
-	webtyp.com/deploy v0.2.110
+	webtyp.com/deploy v0.2.112
 	webtyp.com/ghaction v0.1.2
 	webtyp.com/git v0.0.8
 	webtyp.com/gobuild v0.0.28
