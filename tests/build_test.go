@@ -3,9 +3,9 @@
 package goflare_test
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"webtyp.com/goflare"
@@ -81,20 +81,48 @@ func TestBuild_MissingPublicDir(t *testing.T) {
 	}
 }
 
-func TestBuild_BrowserTagForbidden(t *testing.T) {
+func TestBuild_BrowserTagGuard(t *testing.T) {
 	cfg := &goflare.Config{
 		ProjectName: "test",
 		AccountID:   "123",
 		Entry:       "web/edge.go",
 	}
-	os.Setenv("GOFLAGS", "-tags=browser")
-	defer os.Unsetenv("GOFLAGS")
-	err := cfg.ValidateBuild()
-	if err == nil {
-		t.Fatal("Expected error when browser tag is used")
+
+	tests := []struct {
+		goflags string
+		wantErr bool
+	}{
+		{"-tags=browser", true},
+		{"-tags=dev,browser", true},
+		{"-tags browser", true},
+		{"-mod=mod -tags=browser", true},
+		{"-tags=nobrowser", false},
+		{"-tags=dev", false},
+		{"-mod=mod", false},
+		{"", false},
 	}
-	if !strings.Contains(err.Error(), "goflare: the Cloudflare Worker cannot be compiled with -tags browser") {
-		t.Errorf("Expected error to contain browser tag forbidden message, got %v", err)
+
+	for _, tt := range tests {
+		t.Run(tt.goflags, func(t *testing.T) {
+			if tt.goflags != "" {
+				t.Setenv("GOFLAGS", tt.goflags)
+			} else {
+				t.Setenv("GOFLAGS", "")
+			}
+			err := cfg.ValidateBuild()
+			if tt.wantErr {
+				if err == nil {
+					t.Fatalf("Expected error for GOFLAGS=%q, got nil", tt.goflags)
+				}
+				if !errors.Is(err, goflare.ErrBrowserTagForbidden) {
+					t.Errorf("Expected error to contain %v, got %v", goflare.ErrBrowserTagForbidden, err)
+				}
+			} else {
+				if err != nil {
+					t.Errorf("Expected no error for GOFLAGS=%q, got %v", tt.goflags, err)
+				}
+			}
+		})
 	}
 }
 

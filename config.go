@@ -189,7 +189,7 @@ func (c *Config) ValidateBuild() error {
 	if c.Entry == "" && c.PublicDir == "" {
 		return fmt.Errorf("nothing to build: Entry and PublicDir are both empty")
 	}
-	if strings.Contains(os.Getenv("GOFLAGS"), "browser") {
+	if goflagsHaveTag(os.Getenv("GOFLAGS"), browserBuildTag) {
 		return fmt.Errorf("%w", ErrBrowserTagForbidden)
 	}
 	return nil
@@ -207,6 +207,35 @@ func (c *Config) ValidateDeploy() error {
 		return fmt.Errorf("Entry and PublicDir cannot both be empty")
 	}
 	return nil
+}
+
+// browserBuildTag is the destination tag of the browser binary
+// (web/browser.go). The Worker is defined by its absence.
+const browserBuildTag = "browser"
+
+// goflagsHaveTag reports whether goflags passes tag in a -tags flag, in any of
+// the forms the go command accepts: -tags=a,b · -tags a,b · --tags=a,b.
+func goflagsHaveTag(goflags, tag string) bool {
+	fields := strings.Fields(goflags)
+	for i, f := range fields {
+		var list string
+		switch {
+		case strings.HasPrefix(f, "-tags="):
+			list = strings.TrimPrefix(f, "-tags=")
+		case strings.HasPrefix(f, "--tags="):
+			list = strings.TrimPrefix(f, "--tags=")
+		case (f == "-tags" || f == "--tags") && i+1 < len(fields):
+			list = fields[i+1]
+		default:
+			continue
+		}
+		for _, t := range strings.Split(list, ",") {
+			if t == tag {
+				return true
+			}
+		}
+	}
+	return false
 }
 
 func (c *Config) applyDefaults() {

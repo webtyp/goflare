@@ -51,11 +51,9 @@ GoFlare se despliega en GitHub Actions usando la action oficial `webtyp/goflare@
 El binario de `goflare` se descarga automáticamente según las siguientes reglas:
 1. `inputs.version` si está especificado.
 2. `github.action_ref` si la action se invoca con un tag semver completo (ej: `uses: webtyp/goflare@v0.5.22`).
-3. El tag pre-horneado en `action.yml` (ej: al usar `@v1`).
+3. El último release de la GitHub API.
 
-### Desfase de una versión en `@v1`
-
-En el commit del tag `vX.Y.Z`, `action.yml` hornea la versión `v(X.Y.Z-1)` (el último release cuyas descargas de binarios ya están disponibles). Esto es deliberado y previene fallos 404 durante la publicación del release. Quien requiera la versión exacta en el tag puede fijarla con `uses: webtyp/goflare@vX.Y.Z`.
+Si ninguna resuelve, la action falla.
 
 ## Compilar sin desplegar en Pull Requests
 

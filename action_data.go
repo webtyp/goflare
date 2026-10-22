@@ -4,10 +4,8 @@ package goflare
 
 import (
 	"fmt"
-	"strings"
 
 	"webtyp.com/ghaction"
-	"webtyp.com/git"
 )
 
 const (
@@ -16,26 +14,9 @@ const (
 	TinyGoCacheKeyFmt  = "tinygo-${{ runner.os }}-${{ runner.arch }}-%s"
 )
 
-// LatestReleaseTag returns the highest semver tag in the repository.
-func LatestReleaseTag() (string, error) {
-	g, err := git.NewGit()
-	if err != nil {
-		return "", fmt.Errorf("git init: %w", err)
-	}
-	tag, err := g.GetLatestTag()
-	if err != nil {
-		return "", fmt.Errorf("get latest tag: %w", err)
-	}
-	return strings.TrimSpace(tag), nil
-}
-
 // GoflareAction builds the description of the goflare action.
-func GoflareAction(tinyGoVersion, goflareVersion string) ghaction.Action {
-	if goflareVersion == "" {
-		goflareVersion = "v0.5.22"
-	}
-
-	downloadScript := fmt.Sprintf(`set -euo pipefail
+func GoflareAction(tinyGoVersion string) ghaction.Action {
+	downloadScript := `set -euo pipefail
 
 version="${{ inputs.version }}"
 if [ -z "$version" ]; then
@@ -51,10 +32,10 @@ if [ -z "$version" ]; then
   esac
 fi
 
-# Last resort only. This literal is baked at generation time, so it can never
-# name the tag being released right now.
 if [ -z "$version" ]; then
-  version="%s"
+  echo "goflare: cannot resolve which release to download (no 'version' input, the action ref is not a vX.Y.Z tag, and the GitHub API did not answer)." >&2
+  echo "  Pin one with the 'version' input or use webtyp/goflare@vX.Y.Z." >&2
+  exit 1
 fi
 
 case "$(uname -s)-$(uname -m)" in
@@ -78,7 +59,7 @@ fi
 
 chmod +x "$dest"
 echo "$(dirname "$dest")" >> "$GITHUB_PATH"
-echo "version=${version}" >> "$GITHUB_OUTPUT"`, goflareVersion)
+echo "version=${version}" >> "$GITHUB_OUTPUT"`
 
 	installTinyGoScript := `set -euo pipefail
 out="$(goflare tinygo)"

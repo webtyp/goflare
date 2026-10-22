@@ -11,13 +11,8 @@ import (
 )
 
 func TestActionYmlIsInSync(t *testing.T) {
-	tag, err := goflare.LatestReleaseTag()
-	if err != nil || tag == "" {
-		t.Skipf("skipping TestActionYmlIsInSync: git tags not available or empty (err=%v, tag=%q)", err, tag)
-	}
-
 	actionPath := filepath.Join("..", goflare.ActionFilePath)
-	a := goflare.GoflareAction(goflare.TinyGoVersion, tag)
+	a := goflare.GoflareAction(goflare.TinyGoVersion)
 
 	changed, err := ghaction.Sync(actionPath, a)
 	if err != nil {
