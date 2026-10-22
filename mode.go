@@ -19,10 +19,10 @@ const (
 	LegacyImportEdge    = "webtyp.com/goflare/edge"
 	LegacyImportWorkers = "webtyp.com/goflare/workers"
 
-	ErrNoKnownImport = "cannot infer mode: web/edge.go imports neither " + ImportEdge + " nor " + ImportWorkers
+	ErrNoKnownImport = "cannot infer mode: web/edge/main.go imports neither " + ImportEdge + " nor " + ImportWorkers
 )
 
-// validateEntry confirms that web/edge.go imports at least one of the known runtime packages.
+// validateEntry confirms that web/edge/main.go imports at least one of the known runtime packages.
 func validateEntry(entry string) error {
 	if _, err := os.Stat(entry); errors.Is(err, os.ErrNotExist) {
 		return fmt.Errorf("entry go file does not exist: %s", entry)

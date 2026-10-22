@@ -2,8 +2,10 @@
 PLAN: "feat!: the Worker main is web/edge/main.go and builds into web/edge/"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 15823158798197945357
+PR: https://github.com/webtyp/goflare/pull/33
+REVIEWED_COMMIT: df9d8bee949991a5c3657d1c035515a1854b641a
 ---
 
 > Read AGENTS.md at the repo root before any change.

@@ -85,7 +85,7 @@ func TestBuild_BrowserTagGuard(t *testing.T) {
 	cfg := &goflare.Config{
 		ProjectName: "test",
 		AccountID:   "123",
-		Entry:       "web/edge.go",
+		Entry:       "web/edge/main.go",
 	}
 
 	tests := []struct {

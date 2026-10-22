@@ -246,7 +246,7 @@ func (c *Config) applyDefaults() {
 		c.RootDir = DefaultRootDir
 	}
 	if c.OutputDir == "" {
-		c.OutputDir = "web"
+		c.OutputDir = filepath.Join("web", "edge")
 	}
 	if c.CompilerMode == "" {
 		c.CompilerMode = "S"
@@ -254,8 +254,8 @@ func (c *Config) applyDefaults() {
 
 	// Auto-detect edge function entry (convention).
 	if c.Entry == "" {
-		if _, err := os.Stat(filepath.Join("web", "edge.go")); err == nil {
-			c.Entry = filepath.Join("web", "edge.go")
+		if _, err := os.Stat(filepath.Join("web", "edge", "main.go")); err == nil {
+			c.Entry = filepath.Join("web", "edge", "main.go")
 		}
 	}
 

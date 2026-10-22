@@ -16,7 +16,7 @@ func (g *Goflare) generateWasmFile() error {
 	sourceDir := g.Config.RootDir
 	if sourceDir == "" || sourceDir == "." {
 		if g.Config.Entry != "" {
-			sourceDir = filepath.Dir(filepath.Dir(g.Config.Entry))
+			sourceDir = filepath.Dir(filepath.Dir(filepath.Dir(g.Config.Entry)))
 		}
 	}
 	if sourceDir == "" {

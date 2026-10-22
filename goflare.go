@@ -66,12 +66,12 @@ type Config struct {
 	Domain string // DOMAIN (optional — custom domain)
 
 	// Build inputs (conventions, not configurable via .env)
-	Entry     string // ENTRY      (path to main Go file, empty = Pages only)
+	Entry     string // ENTRY      (path to main Go file, empty = Pages only) web/edge/main.go
 	PublicDir string // PUBLIC_DIR (path to static assets, empty = Worker only)
 	RootDir   string // project root used to locate the routes file (routescan.DefaultFile); default "."
 
 	// Build output (not in .env — always .build/)
-	OutputDir string // default: ".build/"
+	OutputDir string // default: "web/edge"
 
 	// Compiler
 	CompilerMode string // "S" | "M" | "L"  default: "S"
@@ -125,7 +125,7 @@ func New(cfg *Config) *Goflare {
 	// persists the choice to disk storage so a stale previous mode does
 	// not silently override it.
 	edgeBuilder := sitec.NewWasmBuilder(false, sitec.WasmBuildOptions{
-		Entry:      filepath.Join("web", "edge.go"),
+		Entry:      filepath.Join("web", "edge", "main.go"),
 		OutputName: "edge",
 	})
 
