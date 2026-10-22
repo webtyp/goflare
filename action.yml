@@ -101,10 +101,10 @@ runs:
           esac
         fi
 
-        # Last resort only. This literal is baked at generation time, so it can never
-        # name the tag being released right now.
         if [ -z "$version" ]; then
-          version="v0.5.43"
+          echo "goflare: cannot resolve which release to download (no 'version' input, the action ref is not a vX.Y.Z tag, and the GitHub API did not answer)." >&2
+          echo "  Pin one with the 'version' input or use webtyp/goflare@vX.Y.Z." >&2
+          exit 1
         fi
 
         case "$(uname -s)-$(uname -m)" in
