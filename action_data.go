@@ -5,7 +5,6 @@ package goflare
 import (
 	"fmt"
 
-
 	"webtyp.com/ghaction"
 )
 

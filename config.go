@@ -209,7 +209,6 @@ func (c *Config) ValidateDeploy() error {
 	return nil
 }
 
-
 // browserBuildTag is the destination tag of the browser binary
 // (web/browser.go). The Worker is defined by its absence.
 const browserBuildTag = "browser"

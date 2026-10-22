@@ -3,9 +3,9 @@
 package goflare_test
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
-	"strings"
 	"testing"
 
 	"webtyp.com/goflare"
@@ -114,7 +114,7 @@ func TestBuild_BrowserTagGuard(t *testing.T) {
 				if err == nil {
 					t.Fatalf("Expected error for GOFLAGS=%q, got nil", tt.goflags)
 				}
-				if !strings.Contains(err.Error(), goflare.ErrBrowserTagForbidden.Error()) {
+				if !errors.Is(err, goflare.ErrBrowserTagForbidden) {
 					t.Errorf("Expected error to contain %v, got %v", goflare.ErrBrowserTagForbidden, err)
 				}
 			} else {
