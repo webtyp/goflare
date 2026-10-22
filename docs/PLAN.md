@@ -2,8 +2,10 @@
 PLAN: "fix: exact -tags browser guard; action.yml no longer bakes a release tag"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 11844681467837142147
+PR: https://github.com/webtyp/goflare/pull/32
+REVIEWED_COMMIT: 89aa01981160ad2b40c9b3a6c5527fcc0b84163e
 ---
 
 > Read AGENTS.md at the repo root before any change.
