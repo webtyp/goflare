@@ -2,6 +2,8 @@
 PLAN: "feat!: the Worker main is web/edge/main.go and builds into web/edge/"
 EXECUTOR: jules
 REVIEWER: none
+STATUS: running
+SESSION: 15823158798197945357
 ---
 
 > Read AGENTS.md at the repo root before any change.
