@@ -53,10 +53,10 @@ func main() {}`,
 		t.Run(tt.name, func(t *testing.T) {
 			tmp := t.TempDir()
 			webDir := filepath.Join(tmp, "web")
-			entry := filepath.Join(webDir, "edge.go")
+			entry := filepath.Join(webDir, "edge", "main.go")
 
 			if tt.mainGo != "" {
-				os.MkdirAll(webDir, 0755)
+				os.MkdirAll(filepath.Join(webDir, "edge"), 0755)
 				os.WriteFile(entry, []byte(tt.mainGo), 0644)
 			}
 
