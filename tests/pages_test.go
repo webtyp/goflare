@@ -46,7 +46,7 @@ func main() {}
 		AccountID:   "test-account",
 		Entry:       webDir,
 		PublicDir:   publicDir,
-		OutputDir:   filepath.Join(tmpDir, ".build/"),
+		OutputDir:   filepath.Join(tmpDir, "web", "edge"),
 	}
 	g := goflare.New(cfg)
 	builder, _ := newFakeSiteBuilder(map[string][]byte{"index.html": []byte("<html></html>")}, nil)

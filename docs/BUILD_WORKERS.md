@@ -4,7 +4,7 @@ GoFlare enables you to run Go applications on Cloudflare Workers by compiling th
 
 ## Build Process
 
-GoFlare will automatically detect the entry point if `web/edge.go` exists (Convention). `goflare build` will:
+GoFlare will automatically detect the entry point if `web/edge/main.go` exists (Convention). `goflare build` will:
 
 1. Compile your Go source code to WASM using `webtyp` (delegating to `tinygo`).
 2. Generate `edge.js`, which bundles the entry point, runtime, and `wasm_exec.js`.
