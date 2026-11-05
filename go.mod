@@ -5,7 +5,7 @@ go 1.26.8
 require (
 	github.com/tdewolff/minify/v2 v2.24.12
 	webtyp.com/cloudflare v0.0.39
-	webtyp.com/ddl v0.0.15
+	webtyp.com/ddl v0.0.45
 	webtyp.com/deploy v0.2.112
 	webtyp.com/ghaction v0.1.2
 	webtyp.com/gobuild v0.0.28
@@ -15,7 +15,7 @@ require (
 	webtyp.com/pwa v0.2.0
 	webtyp.com/server v0.2.86
 	webtyp.com/sitec v0.2.68
-	webtyp.com/sqlt v0.0.11
+	webtyp.com/sqlt v0.0.14
 	webtyp.com/tinygo v1.0.1
 )
 
