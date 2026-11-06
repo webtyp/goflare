@@ -12,8 +12,8 @@ require (
 	webtyp.com/keyring v0.2.9
 	webtyp.com/lang v0.1.12
 	webtyp.com/modfind v0.0.11
-	webtyp.com/pwa v0.2.0
-	webtyp.com/server v0.2.86
+	webtyp.com/pwa v0.2.13
+	webtyp.com/server v0.2.111
 	webtyp.com/sitec v0.2.68
 	webtyp.com/sqlt v0.0.14
 	webtyp.com/tinygo v1.0.1
@@ -21,12 +21,20 @@ require (
 
 require (
 	github.com/HugoSmits86/nativewebp v1.2.1 // indirect
+	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/disintegration/imaging v1.6.2 // indirect
+	github.com/go-acme/lego/v4 v4.35.2 // indirect
+	github.com/go-jose/go-jose/v4 v4.1.4 // indirect
+	github.com/miekg/dns v1.1.72 // indirect
 	github.com/smallstep/truststore v0.13.0 // indirect
-	golang.org/x/crypto v0.53.0 // indirect
+	golang.org/x/crypto v0.54.0 // indirect
 	golang.org/x/image v0.45.0 // indirect
-	golang.org/x/net v0.55.0 // indirect
+	golang.org/x/mod v0.38.0 // indirect
+	golang.org/x/net v0.57.0 // indirect
+	golang.org/x/sync v0.22.0 // indirect
+	golang.org/x/sys v0.47.0 // indirect
 	golang.org/x/text v0.41.0 // indirect
+	golang.org/x/tools v0.48.0 // indirect
 	howett.net/plist v1.0.0 // indirect
 	webtyp.com/artifacts v0.1.1 // indirect
 	webtyp.com/await v0.1.2 // indirect
@@ -47,10 +55,10 @@ require (
 	github.com/tdewolff/parse/v2 v2.8.11 // indirect
 	webtyp.com/context v0.0.23 // indirect
 	webtyp.com/css v0.4.30 // indirect
-	webtyp.com/dom v0.13.26 // indirect
-	webtyp.com/html v0.0.28 // indirect
-	webtyp.com/json v0.5.29 // indirect
+	webtyp.com/dom v0.13.28 // indirect
+	webtyp.com/html v0.0.29 // indirect
+	webtyp.com/json v0.5.37 // indirect
 	webtyp.com/model v0.2.12
-	webtyp.com/router v0.4.5
+	webtyp.com/router v0.4.17
 	webtyp.com/svg v0.3.30 // indirect
 )
