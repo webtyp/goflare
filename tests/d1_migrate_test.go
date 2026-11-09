@@ -84,7 +84,7 @@ func TestD1Migrator_ExecSuccessAndAuthHeader(t *testing.T) {
 	client := &goflare.CfClient{Token: "my-secret-token", BaseURL: server.URL, HttpClient: http.DefaultClient}
 	conn := goflare.NewD1MigratorFromClient(client, "acc", "db")
 
-	if err := conn.Exec("CREATE TABLE sample (id TEXT PRIMARY KEY);"); err != nil {
+	if _, err := conn.Exec("CREATE TABLE sample (id TEXT PRIMARY KEY);"); err != nil {
 		t.Fatalf("unexpected Exec error: %v", err)
 	}
 	if receivedAuth != "Bearer my-secret-token" {
@@ -106,7 +106,7 @@ func TestD1Migrator_ErrorEnvelope(t *testing.T) {
 	client := &goflare.CfClient{Token: "token", BaseURL: server.URL, HttpClient: http.DefaultClient}
 	conn := goflare.NewD1MigratorFromClient(client, "acc", "db")
 
-	err := conn.Exec("SELCT 1;")
+	_, err := conn.Exec("SELCT 1;")
 	if err == nil {
 		t.Fatal("expected Exec error, got nil")
 	}

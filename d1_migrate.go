@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"webtyp.com/ddl"
+	"webtyp.com/storage"
 )
 
 // NewD1Migrator returns a ddl.Execer that runs schema migrations against a
@@ -54,7 +55,7 @@ type d1Migrator struct {
 // whether it applied. CfClient.post already decodes the {success,errors,
 // result} envelope and returns a descriptive error on failure — Exec adds
 // nothing of its own beyond the request body.
-func (m *d1Migrator) Exec(query string, args ...any) error {
+func (m *d1Migrator) Exec(query string, args ...any) (storage.Result, error) {
 	params := make([]any, len(args))
 	copy(params, args)
 	body, err := json.Marshal(struct {
@@ -62,10 +63,21 @@ func (m *d1Migrator) Exec(query string, args ...any) error {
 		Params []any  `json:"params"`
 	}{SQL: query, Params: params})
 	if err != nil {
-		return err
+		return nil, err
 	}
-	_, err = m.client.post(m.path, body)
-	return err
+	resBody, err := m.client.post(m.path, body)
+	if err != nil {
+		return nil, err
+	}
+	var results []struct {
+		Meta struct {
+			Changes int64 `json:"changes"`
+		} `json:"meta"`
+	}
+	if err := json.Unmarshal(resBody, &results); err == nil && len(results) > 0 {
+		return storage.Affected(results[0].Meta.Changes), nil
+	}
+	return storage.Affected(0), nil
 }
 
 var _ ddl.Execer = (*d1Migrator)(nil)
