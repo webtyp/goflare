@@ -2,8 +2,10 @@
 PLAN: "refactor!: Exec reports rows affected and a duplicate key (storage.Result, storage.Duplicate) — goflare"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 11225238875892284409
+PR: https://github.com/webtyp/goflare/pull/34
+REVIEWED_COMMIT: 72cd0100dfacb0320bbde78beb3c5f105fe3f92a
 ---
 
 > Read AGENTS.md at the repo root before any change.

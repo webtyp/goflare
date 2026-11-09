@@ -26,9 +26,7 @@ func TestDevServer(t *testing.T) {
 	}).Public()
 
 	go func() {
-		if err := s.ListenAndServe(); err != nil {
-			// Expect server closed error on shutdown
-		}
+		_ = s.ListenAndServe() // returns a server-closed error on shutdown
 	}()
 
 	// Wait for server to start

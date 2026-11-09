@@ -5,6 +5,7 @@ package goflare
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"mime/multipart"
@@ -469,7 +470,7 @@ func (g *Goflare) ensureRateLimitRule(client *CfClient, zoneID string) error {
 
 	if _, err := client.put(path, putBody); err != nil {
 		if ce, ok := err.(*cfError); ok && ce.Status == 403 {
-			return fmt.Errorf(ErrMsgRateLimitPermission)
+			return errors.New(ErrMsgRateLimitPermission)
 		}
 		return fmt.Errorf("rate limit: %w", err)
 	}

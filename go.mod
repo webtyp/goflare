@@ -4,8 +4,8 @@ go 1.26.8
 
 require (
 	github.com/tdewolff/minify/v2 v2.24.12
-	webtyp.com/cloudflare v0.0.39
-	webtyp.com/ddl v0.0.46
+	webtyp.com/cloudflare v0.0.73
+	webtyp.com/ddl v0.0.49
 	webtyp.com/deploy v0.2.112
 	webtyp.com/ghaction v0.1.2
 	webtyp.com/gobuild v0.0.28
@@ -15,7 +15,7 @@ require (
 	webtyp.com/pwa v0.2.13
 	webtyp.com/server v0.2.115
 	webtyp.com/sitec v0.2.68
-	webtyp.com/sqlt v0.0.14
+	webtyp.com/sqlt v0.0.17
 	webtyp.com/tinygo v1.0.1
 )
 
@@ -48,7 +48,7 @@ require (
 	webtyp.com/font v0.0.5 // indirect
 	webtyp.com/image v0.1.16 // indirect
 	webtyp.com/js v0.1.3 // indirect
-	webtyp.com/storage v0.1.18 // indirect
+	webtyp.com/storage v0.2.1 // indirect
 )
 
 require (
@@ -58,7 +58,7 @@ require (
 	webtyp.com/dom v0.13.28 // indirect
 	webtyp.com/html v0.0.29 // indirect
 	webtyp.com/json v0.5.40 // indirect
-	webtyp.com/model v0.2.12
-	webtyp.com/router v0.4.17
+	webtyp.com/model v0.2.18
+	webtyp.com/router v0.4.21
 	webtyp.com/svg v0.3.30 // indirect
 )
