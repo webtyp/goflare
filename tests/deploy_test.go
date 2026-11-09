@@ -325,7 +325,7 @@ func TestDeploy_Both_ThreePhasesInOrderWithFullMetadataAndBindings(t *testing.T)
 		case strings.Contains(r.URL.Path, "/assets-upload-session"):
 			callOrder = append(callOrder, "assets-upload-session")
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(fmt.Sprintf(`{"success":true,"result":{"jwt":"session-jwt","buckets":[["%s"]]}}`, indexHash)))
+			fmt.Fprintf(w, `{"success":true,"result":{"jwt":"session-jwt","buckets":[["%s"]]}}`, indexHash)
 		case strings.Contains(r.URL.Path, "/workers/assets/upload"):
 			callOrder = append(callOrder, "workers/assets/upload")
 			phase2Auth = r.Header.Get("Authorization")
@@ -430,7 +430,7 @@ func TestDeploy_SendsHeadersInAssetsConfig(t *testing.T) {
 		w.Header().Set("Content-Type", "application/json")
 		if strings.Contains(r.URL.Path, "/assets-upload-session") {
 			w.WriteHeader(http.StatusOK)
-			w.Write([]byte(fmt.Sprintf(`{"success":true,"result":{"jwt":"session","buckets":[["%s"]]}}`, goflare.ExportAssetHash([]byte("body{}"), "css"))))
+			fmt.Fprintf(w, `{"success":true,"result":{"jwt":"session","buckets":[["%s"]]}}`, goflare.ExportAssetHash([]byte("body{}"), "css"))
 		} else if strings.Contains(r.URL.Path, "/workers/assets/upload") {
 			w.WriteHeader(http.StatusOK)
 			w.Write([]byte(`{"success":true,"result":{"jwt":"completion-jwt"}}`))
