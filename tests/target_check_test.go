@@ -245,8 +245,8 @@ func TestCheck_K4_K9(t *testing.T) {
 	ci.Put("CLOUDFLARE_API_TOKEN", "ci-tok")
 	ci.Put("CLOUDFLARE_ACCOUNT_ID", "a")
 	missing, err = target.Check(p, ci)
-	if len(missing) != 0 {
-		t.Fatalf("expected 0 missing, got %v", missing)
+	if err != nil || len(missing) != 0 {
+		t.Fatalf("expected 0 missing and no error, got %v, %v", missing, err)
 	}
 
 	// K4: shape error

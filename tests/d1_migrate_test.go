@@ -77,7 +77,7 @@ func TestD1Migrator_ExecSuccessAndAuthHeader(t *testing.T) {
 		}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"success": true, "errors": [], "result": []}`))
+		w.Write([]byte(`{"success": true, "errors": [], "result": [{"results": [], "success": true, "meta": {"changes": 0}}]}`))
 	})
 	defer server.Close()
 
@@ -133,7 +133,7 @@ func TestD1Migrator_EndToEndDDLSync(t *testing.T) {
 
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"success": true, "errors": [], "result": []}`))
+		w.Write([]byte(`{"success": true, "errors": [], "result": [{"results": [], "success": true, "meta": {"changes": 0}}]}`))
 	})
 	defer server.Close()
 
@@ -157,5 +157,40 @@ func TestD1Migrator_EndToEndDDLSync(t *testing.T) {
 	}
 	if !hasCreateTable {
 		t.Errorf("expected a CREATE TABLE query, got queries: %v", executedQueries)
+	}
+}
+
+func TestD1Migrator_ExecReportsRowsChanged(t *testing.T) {
+	server := MockHTTPServer(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"success": true, "errors": [], "result": [{"results": [], "success": true, "meta": {"changes": 3}}]}`))
+	})
+	defer server.Close()
+
+	client := &goflare.CfClient{Token: "token", BaseURL: server.URL, HttpClient: http.DefaultClient}
+	conn := goflare.NewD1MigratorFromClient(client, "acc", "db")
+
+	res, err := conn.Exec("UPDATE sample SET v = 1;")
+	if err != nil || res.RowsAffected() != 3 {
+		t.Fatalf("rows = %v, err = %v; want 3, nil", res, err)
+	}
+}
+
+func TestD1Migrator_ExecWithoutCountIsAnError(t *testing.T) {
+	server := MockHTTPServer(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		w.Write([]byte(`{"success": true, "errors": [], "result": []}`))
+	})
+	defer server.Close()
+
+	client := &goflare.CfClient{Token: "token", BaseURL: server.URL, HttpClient: http.DefaultClient}
+	conn := goflare.NewD1MigratorFromClient(client, "acc", "db")
+
+	res, err := conn.Exec("UPDATE sample SET v = 1;")
+	if err == nil {
+		t.Fatal("an answer without meta.changes must be an error, got nil")
+	}
+	if res == nil || res.RowsAffected() != 0 {
+		t.Fatalf("the Result must never be nil, got %v", res)
 	}
 }

@@ -4,6 +4,7 @@ package goflare
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -51,6 +52,9 @@ type d1Migrator struct {
 	path   string
 }
 
+// errNoChanges means the D1 answer carried no result[0].meta.changes: the count of rows is never guessed.
+var errNoChanges = errors.New("d1: the query answer has no result[0].meta.changes")
+
 // Exec POSTs one statement to D1's Query API via CfClient and reports
 // whether it applied. CfClient.post already decodes the {success,errors,
 // result} envelope and returns a descriptive error on failure — Exec adds
@@ -63,21 +67,21 @@ func (m *d1Migrator) Exec(query string, args ...any) (storage.Result, error) {
 		Params []any  `json:"params"`
 	}{SQL: query, Params: params})
 	if err != nil {
-		return nil, err
+		return storage.Affected(0), err
 	}
 	resBody, err := m.client.post(m.path, body)
 	if err != nil {
-		return nil, err
+		return storage.Affected(0), err
 	}
 	var results []struct {
 		Meta struct {
 			Changes int64 `json:"changes"`
 		} `json:"meta"`
 	}
-	if err := json.Unmarshal(resBody, &results); err == nil && len(results) > 0 {
-		return storage.Affected(results[0].Meta.Changes), nil
+	if err := json.Unmarshal(resBody, &results); err != nil || len(results) == 0 {
+		return storage.Affected(0), errNoChanges
 	}
-	return storage.Affected(0), nil
+	return storage.Affected(results[0].Meta.Changes), nil
 }
 
 var _ ddl.Execer = (*d1Migrator)(nil)

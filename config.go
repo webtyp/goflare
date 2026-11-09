@@ -4,6 +4,7 @@ package goflare
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -104,7 +105,7 @@ func LoadConfigFromEnv(path string) (*Config, error) {
 				case EnvKeyRateLimitPer10s:
 					val, err := strconv.Atoi(value)
 					if err != nil || val < 1 {
-						return nil, fmt.Errorf(ErrMsgRateLimitInvalid)
+						return nil, errors.New(ErrMsgRateLimitInvalid)
 					}
 					cfg.RateLimitPer10s = val
 				}
@@ -155,7 +156,7 @@ func LoadConfigFromEnv(path string) (*Config, error) {
 		if envVal != "" {
 			val, err := strconv.Atoi(envVal)
 			if err != nil || val < 1 {
-				return nil, fmt.Errorf(ErrMsgRateLimitInvalid)
+				return nil, errors.New(ErrMsgRateLimitInvalid)
 			}
 			cfg.RateLimitPer10s = val
 		}
