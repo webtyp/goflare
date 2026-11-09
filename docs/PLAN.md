@@ -2,6 +2,8 @@
 PLAN: "refactor!: Exec reports rows affected and a duplicate key (storage.Result, storage.Duplicate) — goflare"
 EXECUTOR: jules
 REVIEWER: none
+STATUS: running
+SESSION: 11225238875892284409
 ---
 
 > Read AGENTS.md at the repo root before any change.
