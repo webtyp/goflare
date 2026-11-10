@@ -629,7 +629,7 @@ func (g *Goflare) retry(n int, base time.Duration, fn func() error) error {
 	if n <= 0 {
 		return nil
 	}
-	policy, err := backoff.New(webtime.Nano(base), webtime.Nano(base)<<uint(n))
+	policy, err := backoff.New(webtime.Duration(base), webtime.Duration(base)<<uint(n))
 	if err != nil {
 		return err
 	}
