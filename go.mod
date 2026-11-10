@@ -4,6 +4,7 @@ go 1.26.8
 
 require (
 	github.com/tdewolff/minify/v2 v2.24.12
+	webtyp.com/backoff v0.1.0
 	webtyp.com/cloudflare v0.0.73
 	webtyp.com/ddl v0.0.49
 	webtyp.com/deploy v0.2.112
@@ -17,6 +18,7 @@ require (
 	webtyp.com/sitec v0.2.93
 	webtyp.com/sqlt v0.0.17
 	webtyp.com/storage v0.2.1
+	webtyp.com/time v0.6.4
 	webtyp.com/tinygo v1.0.1
 )
 
@@ -39,6 +41,7 @@ require (
 	howett.net/plist v1.0.0 // indirect
 	webtyp.com/artifacts v0.1.1 // indirect
 	webtyp.com/await v0.1.2 // indirect
+	webtyp.com/calendar v0.1.0 // indirect
 	webtyp.com/color v0.1.2 // indirect
 	webtyp.com/device v0.1.0 // indirect
 	webtyp.com/escape v0.1.0 // indirect

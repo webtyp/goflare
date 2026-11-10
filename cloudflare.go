@@ -16,6 +16,9 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
+
+	"webtyp.com/backoff"
+	webtime "webtyp.com/time"
 )
 
 const cfAPIBase = "https://api.cloudflare.com/client/v4"
@@ -619,15 +622,28 @@ func truncate(s string, n int) string {
 	return s[:n] + "..."
 }
 
-// retry executes fn up to n times with exponential backoff.
+// retry runs fn up to n times. Between two failed attempts it waits what webtyp.com/backoff gives: base after the first
+// failure, doubling after each further one. The longest delay is base<<n, above every delay this loop asks for, so
+// the cap never applies and the waits are the same as the old base<<i.
 func (g *Goflare) retry(n int, base time.Duration, fn func() error) error {
-	var err error
-	for i := 0; i < n; i++ {
-		if err = fn(); err == nil {
+	if n <= 0 {
+		return nil
+	}
+	policy, err := backoff.New(webtime.Nano(base), webtime.Nano(base)<<uint(n))
+	if err != nil {
+		return err
+	}
+	for attempt := 1; attempt <= n; attempt++ {
+		err = fn()
+		if err == nil {
 			return nil
 		}
-		if i < n-1 {
-			time.Sleep(base << i)
+		if attempt < n {
+			delay, delayErr := policy.DelayAfter(int64(attempt))
+			if delayErr != nil {
+				return delayErr
+			}
+			time.Sleep(time.Duration(delay))
 		}
 	}
 	return err
