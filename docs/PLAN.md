@@ -2,8 +2,10 @@
 PLAN: "refactor: goflare takes its retry delay from webtyp.com/backoff and deletes its private doubling"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 9165095695805900288
+PR: https://github.com/webtyp/goflare/pull/35
+REVIEWED_COMMIT: 486be2bee09dd0d8da42c7e527ee0cfe8313fc6b
 ---
 
 > Read AGENTS.md at the repo root before any change.
