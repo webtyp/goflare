@@ -2,8 +2,10 @@
 PLAN: "refactor: backoff v0.2.0 (time.Duration delays)"
 EXECUTOR: jules
 REVIEWER: none
-STATUS: running
+STATUS: review
 SESSION: 6419781049252910824
+PR: https://github.com/webtyp/goflare/pull/36
+REVIEWED_COMMIT: f0f9afc0e7ada76f2b8c271199bb8398375677fa
 ---
 
 > Read AGENTS.md at the repo root before any change.
