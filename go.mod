@@ -14,8 +14,9 @@ require (
 	webtyp.com/modfind v0.0.11
 	webtyp.com/pwa v0.2.13
 	webtyp.com/server v0.2.115
-	webtyp.com/sitec v0.2.68
+	webtyp.com/sitec v0.2.92
 	webtyp.com/sqlt v0.0.17
+	webtyp.com/storage v0.2.1
 	webtyp.com/tinygo v1.0.1
 )
 
@@ -48,15 +49,14 @@ require (
 	webtyp.com/font v0.0.5 // indirect
 	webtyp.com/image v0.1.16 // indirect
 	webtyp.com/js v0.1.3 // indirect
-	webtyp.com/storage v0.2.1 // indirect
 )
 
 require (
 	github.com/tdewolff/parse/v2 v2.8.11 // indirect
 	webtyp.com/context v0.0.23 // indirect
 	webtyp.com/css v0.4.30 // indirect
-	webtyp.com/dom v0.13.28 // indirect
-	webtyp.com/html v0.0.29 // indirect
+	webtyp.com/dom v0.13.29 // indirect
+	webtyp.com/html v0.0.30 // indirect
 	webtyp.com/json v0.5.40 // indirect
 	webtyp.com/model v0.2.18
 	webtyp.com/router v0.4.21
