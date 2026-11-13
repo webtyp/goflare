@@ -48,7 +48,7 @@ require (
 	webtyp.com/fetch v0.1.29 // indirect
 	webtyp.com/filepath v0.1.0 // indirect
 	webtyp.com/files v0.0.4 // indirect
-	webtyp.com/fmt v1.0.0 // indirect
+	webtyp.com/fmt v1.0.1 // indirect
 	webtyp.com/font v0.0.5 // indirect
 	webtyp.com/image v0.1.16 // indirect
 	webtyp.com/js v0.1.3 // indirect
