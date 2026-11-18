@@ -6,7 +6,7 @@ require (
 	github.com/tdewolff/minify/v2 v2.24.12
 	webtyp.com/backoff v0.2.0
 	webtyp.com/cloudflare v0.0.73
-	webtyp.com/ddl v0.0.49
+	webtyp.com/ddl v0.0.59
 	webtyp.com/deploy v0.2.112
 	webtyp.com/ghaction v0.1.2
 	webtyp.com/gobuild v0.0.28
@@ -17,7 +17,7 @@ require (
 	webtyp.com/server v0.2.115
 	webtyp.com/sitec v0.2.93
 	webtyp.com/sqlt v0.0.21
-	webtyp.com/storage v0.2.3
+	webtyp.com/storage v0.2.8
 	webtyp.com/time v0.6.5
 	webtyp.com/tinygo v1.0.1
 )
@@ -48,7 +48,7 @@ require (
 	webtyp.com/fetch v0.1.29 // indirect
 	webtyp.com/filepath v0.1.3 // indirect
 	webtyp.com/files v0.0.4 // indirect
-	webtyp.com/fmt v1.0.2 // indirect
+	webtyp.com/fmt v1.0.3 // indirect
 	webtyp.com/font v0.0.5 // indirect
 	webtyp.com/image v0.1.16 // indirect
 	webtyp.com/js v0.1.3 // indirect
@@ -61,7 +61,7 @@ require (
 	webtyp.com/dom v0.13.29 // indirect
 	webtyp.com/html v0.0.30 // indirect
 	webtyp.com/json v0.5.40 // indirect
-	webtyp.com/model v0.2.23
+	webtyp.com/model v0.2.24
 	webtyp.com/router v0.4.21
 	webtyp.com/svg v0.3.30 // indirect
 )
