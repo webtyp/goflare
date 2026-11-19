@@ -65,6 +65,6 @@ require (
 	webtyp.com/html v0.0.30 // indirect
 	webtyp.com/json v0.5.40 // indirect
 	webtyp.com/model v0.2.26
-	webtyp.com/router v0.5.8
+	webtyp.com/router v0.5.9
 	webtyp.com/svg v0.3.30 // indirect
 )
