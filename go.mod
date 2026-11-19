@@ -13,7 +13,7 @@ require (
 	webtyp.com/keyring v0.2.9
 	webtyp.com/lang v0.1.16
 	webtyp.com/modfind v0.0.11
-	webtyp.com/pwa v0.2.13
+	webtyp.com/pwa v0.2.24
 	webtyp.com/server v0.2.115
 	webtyp.com/sitec v0.2.93
 	webtyp.com/sqlt v0.0.21
