@@ -11,7 +11,7 @@ require (
 	webtyp.com/ghaction v0.1.2
 	webtyp.com/gobuild v0.0.28
 	webtyp.com/keyring v0.2.9
-	webtyp.com/lang v0.1.16
+	webtyp.com/lang v0.1.22
 	webtyp.com/modfind v0.0.11
 	webtyp.com/pwa v0.2.24
 	webtyp.com/server v0.2.115
