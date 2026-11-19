@@ -9,16 +9,16 @@ require (
 	webtyp.com/ddl v0.0.59
 	webtyp.com/deploy v0.2.112
 	webtyp.com/ghaction v0.1.2
-	webtyp.com/gobuild v0.0.28
+	webtyp.com/gobuild v0.0.29
 	webtyp.com/keyring v0.2.9
 	webtyp.com/lang v0.1.22
 	webtyp.com/modfind v0.0.11
 	webtyp.com/pwa v0.2.24
-	webtyp.com/server v0.2.115
+	webtyp.com/server v0.2.137
 	webtyp.com/sitec v0.2.93
 	webtyp.com/sqlt v0.0.21
 	webtyp.com/storage v0.2.8
-	webtyp.com/time v0.6.5
+	webtyp.com/time v0.6.7
 	webtyp.com/tinygo v1.0.1
 )
 
@@ -45,6 +45,7 @@ require (
 	webtyp.com/color v0.1.2 // indirect
 	webtyp.com/device v0.1.0 // indirect
 	webtyp.com/escape v0.1.0 // indirect
+	webtyp.com/events v0.1.15 // indirect
 	webtyp.com/fetch v0.1.29 // indirect
 	webtyp.com/filepath v0.1.3 // indirect
 	webtyp.com/files v0.0.4 // indirect
@@ -52,6 +53,8 @@ require (
 	webtyp.com/font v0.0.5 // indirect
 	webtyp.com/image v0.1.16 // indirect
 	webtyp.com/js v0.1.3 // indirect
+	webtyp.com/msgtype v0.1.2 // indirect
+	webtyp.com/securityevent v0.0.2 // indirect
 )
 
 require (
@@ -61,7 +64,7 @@ require (
 	webtyp.com/dom v0.13.29 // indirect
 	webtyp.com/html v0.0.30 // indirect
 	webtyp.com/json v0.5.40 // indirect
-	webtyp.com/model v0.2.24
-	webtyp.com/router v0.4.21
+	webtyp.com/model v0.2.26
+	webtyp.com/router v0.5.8
 	webtyp.com/svg v0.3.30 // indirect
 )
