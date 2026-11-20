@@ -14,7 +14,7 @@ require (
 	webtyp.com/lang v0.1.22
 	webtyp.com/modfind v0.0.11
 	webtyp.com/pwa v0.2.24
-	webtyp.com/server v0.2.140
+	webtyp.com/server v0.2.141
 	webtyp.com/sitec v0.2.93
 	webtyp.com/sqlt v0.0.21
 	webtyp.com/storage v0.2.8
