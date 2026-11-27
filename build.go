@@ -24,8 +24,10 @@ func (g *Goflare) Build() error {
 	var buildErrors []error
 
 	if g.Config.Entry != "" {
-		if err := validateEntry(g.Config.Entry); err != nil {
-			return fmt.Errorf("mode detection failed: %w", err)
+		if !edgeJSEnabled() {
+			if err := validateEntry(g.Config.Entry); err != nil {
+				return fmt.Errorf("mode detection failed: %w", err)
+			}
 		}
 		if err := g.buildWorker(); err != nil {
 			buildErrors = append(buildErrors, fmt.Errorf("worker build failed: %w", err))
@@ -87,6 +89,11 @@ func (g *Goflare) buildWorker() error {
 	// 2. Ensure OutputDir exists
 	if err := os.MkdirAll(g.Config.OutputDir, 0755); err != nil {
 		return fmt.Errorf("failed to create output directory: %w", err)
+	}
+
+	// 2b. Go -> ESM edge build (zero edge.wasm)
+	if edgeJSEnabled() {
+		return g.buildWorkerJS()
 	}
 
 	// 3. Call generateWasmFile()
