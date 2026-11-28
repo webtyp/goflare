@@ -7,10 +7,9 @@
 
 ## 1. Executive Summary
 
-**GoFlare** is a library and CLI written in pure Go for deploying Go/WASM applications to **Cloudflare Workers** (edge functions) and **Cloudflare Pages** (static hosting). It eliminates dependency on Node.js, Wrangler, or GitHub Actions by integrating directly:
+**GoFlare** is a library and CLI written in pure Go for deploying Go applications to **Cloudflare Workers** (edge functions) and **Cloudflare Pages** (static hosting). It eliminates dependency on Node.js, Wrangler, or GitHub Actions by integrating directly:
 
-- Go → WASM compilation using TinyGo
-- Worker JavaScript bundling and minification
+- Go → JavaScript compilation of the edge with goesm (no WebAssembly)
 - Direct integration with the Cloudflare API
 - Simplified secret management based on environment/CI (GitHub Secrets)
 
@@ -66,7 +65,7 @@ All direct dependencies are modern and actively maintained:
 | Module | Purpose |
 |---|---|
 | `github.com/tdewolff/minify/v2` | JS/CSS minification |
-| `webtyp.com/sitec` | `script.js` / `style.css` generation, and WASM compilation (`WasmBuilder`) |
+| `webtyp.com/sitec` | `script.js` / `style.css` generation and the site's Web Workers |
 
 **Requirements:** Go 1.25.2+.
 

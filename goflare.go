@@ -3,8 +3,6 @@
 package goflare
 
 import (
-	"os"
-	"path/filepath"
 	"runtime/debug"
 	"time"
 
@@ -73,9 +71,6 @@ type Config struct {
 	// Build output (not in .env — always .build/)
 	OutputDir string // default: "web/edge"
 
-	// Compiler
-	CompilerMode string // "S" | "M" | "L"  default: "S"
-
 	D1Binding string // D1_BINDING
 	D1Name    string // D1_NAME    — database name in the account; its ID is resolved at deploy
 	R2Binding string // R2_BINDING
@@ -84,13 +79,11 @@ type Config struct {
 }
 
 type Goflare struct {
-	edgeBuilder  sitec.WasmBuilder // Worker compiler (Entry)
-	siteBuilder  SiteBuilder       // Static pages compiler
-	Config       *Config           // exported so CLI can read it after LoadConfigFromEnv
+	siteBuilder  SiteBuilder // Static pages compiler
+	Config       *Config     // exported so CLI can read it after LoadConfigFromEnv
 	log          func(message ...any)
 	BaseURL      string
 	SiteURL      string        // override public URL for testing probe
-	stagingDir   string        // temporary directory for build artifacts
 	RetryBackoff time.Duration // base duration for retries (defaults to 1s)
 }
 
@@ -112,38 +105,15 @@ func New(cfg *Config) *Goflare {
 	}
 	cfg.applyDefaults()
 
-	staging, err := os.MkdirTemp("", "goflare-*")
-	if err != nil {
-		// Fallback to configured OutputDir if MkdirTemp fails
-		staging = cfg.OutputDir
-	}
-
-	// goflare ALWAYS compiles the edge with TinyGo in production mode.
-	// Cloudflare Workers/Pages enforce a 1 MiB wasm limit on Free plans,
-	// which standard Go (2-10 MB) cannot meet. The typed wrapper insulates
-	// goflare from any future change to the internal mode letter and
-	// persists the choice to disk storage so a stale previous mode does
-	// not silently override it.
-	edgeBuilder := sitec.NewWasmBuilder(false, sitec.WasmBuildOptions{
-		Entry:      filepath.Join("web", "edge", "main.go"),
-		OutputName: "edge",
-	})
-
 	g := &Goflare{
-		edgeBuilder:  edgeBuilder,
 		siteBuilder:  buildSite,
 		Config:       cfg,
 		BaseURL:      cfAPIBase,
-		stagingDir:   staging,
 		RetryBackoff: time.Second,
 	}
 
 	return g
 }
-
-// StagingDir returns the temporary directory used for intermediate build artifacts.
-// Exposed for testing — verifies that staging is outside the project tree.
-func (g *Goflare) StagingDir() string { return g.stagingDir }
 
 func (g *Goflare) SetLog(f func(message ...any)) {
 	g.log = f
@@ -153,10 +123,4 @@ func (g *Goflare) Logger(messages ...any) {
 	if g.log != nil {
 		g.log(messages...)
 	}
-}
-
-// SetCompilerMode changes the compiler mode
-// mode: "L" (Large fast/Go), "M" (Medium TinyGo debug), "S" (Small TinyGo production)
-func (g *Goflare) SetCompilerMode(newValue string) {
-	g.Config.CompilerMode = newValue
 }

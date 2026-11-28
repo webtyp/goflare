@@ -8,14 +8,23 @@ import (
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	cloudflareassets "webtyp.com/cloudflare/assets"
 )
 
-func edgeJSEnabled() bool {
-	return os.Getenv("WEBTYP_EDGE") == "js"
-}
+// versionPlaceholder in worker.mjs becomes this goflare's identity (the x-goflare header).
+const versionPlaceholder = "__GOFLARE_VERSION__"
 
-// buildWorkerJS compiles the Worker entry package (e.g. web/edge/main.go) directly to a
-// single minified ES Module (edge.js) via goesm — zero edge.wasm, zero wasm_exec.js.
+// Edge output files, both ES Modules: EdgeModule is the main module Cloudflare calls
+// (cloudflare/assets/worker.mjs), AppModule the goesm output of the edge it imports.
+const (
+	EdgeModule = "edge.js"
+	AppModule  = cloudflareassets.AppModule
+)
+
+// buildWorkerJS compiles the Worker entry package (e.g. web/edge/main.go) to one minified ES
+// Module with goesm (app.js) and writes next to it the module Worker that calls it (edge.js).
+// The edge is JavaScript only: there is no WebAssembly.
 func (g *Goflare) buildWorkerJS() error {
 	pkgDir := filepath.Dir(g.Config.Entry)
 	tmpDir, err := os.MkdirTemp("", "goflare-goesm-*")
@@ -46,8 +55,11 @@ func (g *Goflare) buildWorkerJS() error {
 			if err != nil {
 				return err
 			}
-			dst := filepath.Join(g.Config.OutputDir, "edge.js")
-			return os.WriteFile(dst, data, 0644)
+			if err := os.WriteFile(filepath.Join(g.Config.OutputDir, AppModule), data, 0644); err != nil {
+				return err
+			}
+			worker := strings.ReplaceAll(string(cloudflareassets.WorkerMJS), versionPlaceholder, identityValue())
+			return os.WriteFile(filepath.Join(g.Config.OutputDir, EdgeModule), []byte(worker), 0644)
 		}
 	}
 	return fmt.Errorf("goesm produced no .js output for %s", g.Config.Entry)

@@ -65,10 +65,9 @@ func (p *Panel) RootCSS() *css.Stylesheet { return css.Theme() }
 	}
 
 	cfg := &goflare.Config{
-		ProjectName:  "integration-site",
-		PublicDir:    publicDir,
-		OutputDir:    ".build",
-		CompilerMode: goflare.CompilerModeStdlib,
+		ProjectName: "integration-site",
+		PublicDir:   publicDir,
+		OutputDir:   ".build",
 	}
 
 	g := goflare.New(cfg)

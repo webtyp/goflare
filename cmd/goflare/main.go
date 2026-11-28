@@ -37,11 +37,11 @@ func main() {
 			os.Exit(1)
 		}
 
-	case "size":
-		fs := flag.NewFlagSet("size", flag.ExitOnError)
+	case "imports":
+		fs := flag.NewFlagSet("imports", flag.ExitOnError)
 		env := fs.String("env", ".env", "path to .env file")
 		fs.Parse(args)
-		if err := goflare.RunSize(*env, os.Stdout); err != nil {
+		if err := goflare.RunImports(*env, os.Stdout); err != nil {
 			fmt.Fprintln(os.Stderr, "Error:", err)
 			os.Exit(1)
 		}

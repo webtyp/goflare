@@ -25,7 +25,7 @@ type capturedMetadata struct {
 	metadata          map[string]any
 	hasScriptFile     bool
 	scriptContentType string
-	wasmContentType   string
+	appContentType    string
 }
 
 func captureDeployPUT(t *testing.T, r *http.Request) capturedMetadata {
@@ -42,15 +42,15 @@ func captureDeployPUT(t *testing.T, r *http.Request) capturedMetadata {
 	if hasScript && len(scriptFiles) > 0 {
 		scriptCT = scriptFiles[0].Header.Get("Content-Type")
 	}
-	var wasmCT string
-	if wasmFiles, ok := r.MultipartForm.File["edge.wasm"]; ok && len(wasmFiles) > 0 {
-		wasmCT = wasmFiles[0].Header.Get("Content-Type")
+	var appCT string
+	if appFiles, ok := r.MultipartForm.File[goflare.AppModule]; ok && len(appFiles) > 0 {
+		appCT = appFiles[0].Header.Get("Content-Type")
 	}
 	return capturedMetadata{
 		metadata:          meta,
 		hasScriptFile:     hasScript,
 		scriptContentType: scriptCT,
-		wasmContentType:   wasmCT,
+		appContentType:    appCT,
 	}
 }
 
@@ -115,7 +115,7 @@ func TestDeploy_RouteScanErrorFailsDeployAndSendsNoScript(t *testing.T) {
 	withCloudflareToken(t)
 	env := newTestEnv(t) // PublicDir has index.html => hasAssets is true
 	env.writeOutput("edge.js", "console.log('edge')")
-	env.writeOutput("edge.wasm", "wasm-bytes")
+	env.writeOutput(goflare.AppModule, "export const app = true;")
 
 	routesFile := filepath.Join(env.Root, filepath.FromSlash(routescan.DefaultFile))
 	os.MkdirAll(filepath.Dir(routesFile), 0o755)
@@ -169,7 +169,7 @@ func TestDeploy_ScriptOnly_NoAssetsKeyNoUploadSession(t *testing.T) {
 	env := newTestEnv(t)
 	os.Remove(filepath.Join(env.PublicDir, "index.html")) // PublicDir now empty
 	env.writeOutput("edge.js", "console.log('edge')")
-	env.writeOutput("edge.wasm", "wasm-bytes")
+	env.writeOutput(goflare.AppModule, "export const app = true;")
 
 	sessionCalled := false
 	var captured capturedMetadata
@@ -241,7 +241,7 @@ func TestDeploy_ScriptPart_UsesESModuleContentType(t *testing.T) {
 	env := newTestEnv(t)
 	os.Remove(filepath.Join(env.PublicDir, "index.html")) // script-only: isolate the assertion
 	env.writeOutput("edge.js", "export default { fetch() {} }")
-	env.writeOutput("edge.wasm", "wasm-bytes")
+	env.writeOutput(goflare.AppModule, "export const app = true;")
 
 	var captured capturedMetadata
 	server := MockHTTPServer(func(w http.ResponseWriter, r *http.Request) {
@@ -270,8 +270,9 @@ func TestDeploy_ScriptPart_UsesESModuleContentType(t *testing.T) {
 		t.Errorf("edge.js part Content-Type = %q, want %q — Cloudflare rejects anything else on main_module with: Main module must be an ES module",
 			got, "application/javascript+module")
 	}
-	if got := captured.wasmContentType; got != "application/wasm" {
-		t.Errorf("edge.wasm part Content-Type = %q, want %q", got, "application/wasm")
+	if got := captured.appContentType; got != "application/javascript+module" {
+		t.Errorf("app.js part Content-Type = %q, want %q — the goesm output is an ES module the main module imports",
+			got, "application/javascript+module")
 	}
 }
 
@@ -304,7 +305,7 @@ func TestDeploy_Both_ThreePhasesInOrderWithFullMetadataAndBindings(t *testing.T)
 	withCloudflareToken(t)
 	env := newTestEnv(t)
 	env.writeOutput("edge.js", "console.log('edge')")
-	env.writeOutput("edge.wasm", "wasm-bytes")
+	env.writeOutput(goflare.AppModule, "export const app = true;")
 
 	// index.html comes from newTestEnv; compute its real asset hash so the
 	// mocked phase-1 response can put it in a bucket that uploadAssets can
@@ -422,7 +423,7 @@ func TestDeploy_SendsHeadersInAssetsConfig(t *testing.T) {
 	withCloudflareToken(t)
 	env := newTestEnv(t)
 	env.writeOutput("edge.js", "console.log('edge')")
-	env.writeOutput("edge.wasm", "wasm-bytes")
+	env.writeOutput(goflare.AppModule, "export const app = true;")
 	env.writePublic("style.3f9a1c2b.css", "body{}")
 
 	var captured capturedMetadata

@@ -12,24 +12,6 @@ import (
 	"webtyp.com/tinygo"
 )
 
-func (g *Goflare) generateWasmFile() error {
-	sourceDir := g.Config.RootDir
-	if sourceDir == "" || sourceDir == "." {
-		if g.Config.Entry != "" {
-			sourceDir = filepath.Dir(filepath.Dir(filepath.Dir(g.Config.Entry)))
-		}
-	}
-	if sourceDir == "" {
-		sourceDir = "."
-	}
-	out, err := g.edgeBuilder.Build(sourceDir)
-	if err != nil {
-		return err
-	}
-	targetPath := filepath.Join(g.stagingDir, "edge.wasm")
-	return os.WriteFile(targetPath, out.Binary, 0644)
-}
-
 const (
 	// TinyGoVersion is the TinyGo version this goflare binary will install.
 	TinyGoVersion = tinygo.DefaultVersion
@@ -40,6 +22,9 @@ const (
 	// TinyGoVersionPrefix marks the stdout line carrying the version.
 	TinyGoVersionPrefix = "TINYGO_VERSION="
 )
+
+// TinyGo is not used by the edge (JavaScript only). The site build needs it for the Web Workers
+// that declare //go:build wasm && tinygo, so CI installs it through `goflare tinygo`.
 
 // TinyGoBinDir installs TinyGo when missing and returns the directory holding
 // the binary, along with the version it reports.

@@ -8,8 +8,8 @@
 
 Cualquier proyecto con `web/edge/main.go` genera exactamente el mismo par de artefactos en `web/`:
 
-- `web/edge/edge.js` — el pegamento JavaScript empaquetado y minificado.
-- `web/edge/edge.wasm` — el binario compilado de Go (goflare valida el presupuesto de 900 KiB crudo).
+- `web/edge/edge.js` — el módulo principal que llama Cloudflare (`webtyp/cloudflare/assets/worker.mjs`).
+- `web/edge/app.js` — `web/edge/main.go` compilado a JavaScript con goesm; `edge.js` lo importa en la primera petición. No hay WebAssembly.
 
 Si el proyecto contiene `web/public/`, sus archivos se procesan como assets estáticos.
 
@@ -32,7 +32,7 @@ El despliegue combina la API Direct Upload de Assets de Cloudflare Workers con e
    Si Cloudflare solicita subir archivos (buckets no vacíos), `goflare` sube los datos codificados en base64 usando el JWT obtenido en la Fase 1 como cabecera de autorización. Devuelve un **token de finalización** (validado por 1 hora).
 
 3. **Fase 3 — Despliegue del Worker (`PUT /accounts/.../workers/scripts/{script_name}`):**
-   Envía la petición multipart/form-data con los artefactos `web/edge/edge.js` y `web/edge/edge.wasm`, junto al campo `metadata` configurado:
+   Envía la petición multipart/form-data con los dos módulos ES `web/edge/edge.js` (principal) y `web/edge/app.js`, junto al campo `metadata` configurado:
 
 ```json
 {

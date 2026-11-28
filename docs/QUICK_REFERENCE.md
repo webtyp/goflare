@@ -5,7 +5,7 @@
 | Command | Description |
 |---|---|
 | `goflare auth --check` | Validate `CLOUDFLARE_API_TOKEN` from environment. |
-| `goflare build` | Build the project (wasm + assets). |
+| `goflare build` | Build the project (edge to JavaScript with goesm + site assets). |
 | `goflare deploy` | Deploy to Cloudflare. Requires env vars. CI only. |
 | `goflare d1-id` | Print the ID of the D1 database named by `D1_NAME`. |
 
@@ -20,7 +20,6 @@
 | `D1_BINDING` / `D1_NAME` | D1 binding name and database name (ID resolved at deploy). |
 | `R2_BINDING` / `R2_BUCKET` | R2 binding name and bucket name. |
 | `VARS` | Non-secret variables, one `KEY=VALUE` per line. |
-| `COMPILER_MODE` | `S` (Small), `M` (Medium), `L` (Large). Default: `S`. |
 | `COMPATIBILITY_DATE` | Workers compatibility date (default: `2026-08-01`). |
 | `NOT_FOUND_HANDLING` | Asset 404 handling (default: `single-page-application`). |
 

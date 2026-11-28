@@ -77,39 +77,18 @@ func TestBuildPages_PassesModuleRootAndPublicDir(t *testing.T) {
 	}
 }
 
-func TestBuildPages_ModeFollowsCompilerMode(t *testing.T) {
-	tests := []struct {
-		compilerMode string
-		expectedMode sitec.Mode
-	}{
-		{compilerMode: "L", expectedMode: sitec.ModeDev},
-		{compilerMode: "S", expectedMode: sitec.ModeRelease},
-		{compilerMode: "", expectedMode: sitec.ModeRelease},
+// A deploy always builds the site in release mode: there is no compiler choice left for the
+// page (it is a goesm ES Module).
+func TestBuildPages_AlwaysRelease(t *testing.T) {
+	env := newTestEnv(t)
+	builder, fake := newFakeSiteBuilder(nil, nil)
+	g := goflare.New(&goflare.Config{ProjectName: "test", PublicDir: env.PublicDir, OutputDir: env.OutputDir})
+	g.SetSiteBuilder(builder)
+	if err := g.Build(); err != nil {
+		t.Fatalf("Build failed: %v", err)
 	}
-
-	for _, tt := range tests {
-		t.Run("CompilerMode="+tt.compilerMode, func(t *testing.T) {
-			env := newTestEnv(t)
-			builder, fake := newFakeSiteBuilder(nil, nil)
-
-			cfg := &goflare.Config{
-				ProjectName:  "test",
-				PublicDir:    env.PublicDir,
-				OutputDir:    env.OutputDir,
-				CompilerMode: tt.compilerMode,
-			}
-
-			g := goflare.New(cfg)
-			g.SetSiteBuilder(builder)
-
-			if err := g.Build(); err != nil {
-				t.Fatalf("Build failed: %v", err)
-			}
-
-			if fake.cfg.Mode != tt.expectedMode {
-				t.Errorf("expected Mode %v, got %v", tt.expectedMode, fake.cfg.Mode)
-			}
-		})
+	if fake.cfg.Mode != sitec.ModeRelease {
+		t.Errorf("Mode = %v, want sitec.ModeRelease", fake.cfg.Mode)
 	}
 }
 

@@ -21,7 +21,6 @@ const (
 	EnvKeyWorkerName        = "WORKER_NAME"
 	EnvKeyDomain            = "DOMAIN"
 	EnvKeyRateLimitPer10s   = "RATE_LIMIT_PER_10S"
-	EnvKeyCompilerMode      = "COMPILER_MODE"
 	EnvKeyD1Binding         = "D1_BINDING"
 	EnvKeyD1Name            = "D1_NAME"
 	EnvKeyR2Binding         = "R2_BINDING"
@@ -86,8 +85,6 @@ func LoadConfigFromEnv(path string) (*Config, error) {
 					cfg.WorkerName = value
 				case EnvKeyDomain:
 					cfg.Domain = value
-				case EnvKeyCompilerMode:
-					cfg.CompilerMode = value
 				case EnvKeyD1Binding:
 					cfg.D1Binding = value
 				case EnvKeyD1Name:
@@ -128,9 +125,6 @@ func LoadConfigFromEnv(path string) (*Config, error) {
 	}
 	if cfg.Domain == "" {
 		cfg.Domain = os.Getenv(EnvKeyDomain)
-	}
-	if cfg.CompilerMode == "" {
-		cfg.CompilerMode = os.Getenv(EnvKeyCompilerMode)
 	}
 	if cfg.D1Binding == "" {
 		cfg.D1Binding = os.Getenv(EnvKeyD1Binding)
@@ -248,9 +242,6 @@ func (c *Config) applyDefaults() {
 	}
 	if c.OutputDir == "" {
 		c.OutputDir = filepath.Join("web", "edge")
-	}
-	if c.CompilerMode == "" {
-		c.CompilerMode = "S"
 	}
 
 	// Auto-detect edge function entry (convention).

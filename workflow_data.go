@@ -43,7 +43,7 @@ git push origin -f v1`
 					ghaction.CheckoutWithTags(),
 					ghaction.SetupGoStep(),
 					{Name: "Build the release binaries", Shell: "bash", Run: buildRun},
-					{Name: "Publish the release", Shell: "bash", Env: []ghaction.KeyValue{{Key: "GH_TOKEN", Value: "${{ secrets.GITHUB_TOKEN }}"}} , Run: publishRun},
+					{Name: "Publish the release", Shell: "bash", Env: []ghaction.KeyValue{{Key: "GH_TOKEN", Value: "${{ secrets.GITHUB_TOKEN }}"}}, Run: publishRun},
 					{Name: "Move the v1 tag", Shell: "bash", Run: moveRun},
 				},
 			},

@@ -3,70 +3,15 @@
 package goflare
 
 import (
-	"fmt"
-	"os"
-	"os/exec"
-	"path/filepath"
 	"strings"
 
 	"webtyp.com/gobuild"
 )
 
 const (
-	tinygoCmdName     = "tinygo"
-	tinygoBuildSubcmd = "build"
-	tinygoFlagTarget  = "-target"
-	tinygoTargetWasm  = "wasm"
-	tinygoFlagSize    = "-size=full"
-	tinygoFlagOut     = "-o"
-	tinygoEntryMain   = "main.go"
-	envGOOS           = "GOOS"
-	envGOARCH         = "GOARCH"
-	goosJS            = "js"
-	goarchWASM        = "wasm"
+	goosJS     = "js"
+	goarchWASM = "wasm"
 )
-
-func sizeBreakdownArgs(tmpPath string) []string {
-	return []string{
-		tinygoBuildSubcmd,
-		tinygoFlagTarget,
-		tinygoTargetWasm,
-		tinygoFlagSize,
-		tinygoFlagOut,
-		tmpPath,
-		tinygoEntryMain,
-	}
-}
-
-// SizeBreakdown builds entryDir with symbols and returns the per-package table
-// TinyGo emits. The artifact is written to a temporary directory and deleted:
-// only the report matters. It NEVER replaces the build that gets deployed,
-// which still comes out of sitec without symbols.
-func SizeBreakdown(entryDir string) (string, error) {
-	if err := EnsureTinyGo(os.Stdout); err != nil {
-		return "", fmt.Errorf("size breakdown ensure tinygo: %w", err)
-	}
-
-	tmpDir, err := os.MkdirTemp("", "goflare-size-*")
-	if err != nil {
-		return "", fmt.Errorf("size breakdown mktemp: %w", err)
-	}
-	defer os.RemoveAll(tmpDir)
-
-	tmpPath := filepath.Join(tmpDir, "diagnose.wasm")
-	args := sizeBreakdownArgs(tmpPath)
-
-	cmd := exec.Command(tinygoCmdName, args...)
-	cmd.Dir = entryDir
-	cmd.Env = append(os.Environ(), envGOOS+"="+goosJS, envGOARCH+"="+goarchWASM)
-
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		return "", fmt.Errorf("tinygo size breakdown failed (%w): %s", err, string(out))
-	}
-
-	return string(out), nil
-}
 
 // IsStdlib reports whether an import path belongs to the Go standard library.
 func IsStdlib(importPath string) bool {

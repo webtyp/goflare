@@ -6,17 +6,12 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"webtyp.com/sitec"
 )
 
 // Build orchestrates the build pipeline.
 func (g *Goflare) Build() error {
-	if g.stagingDir != g.Config.OutputDir {
-		defer os.RemoveAll(g.stagingDir)
-	}
-
 	if g.Config.Entry == "" && g.Config.PublicDir == "" {
 		return errors.New("nothing to build: both Entry and PublicDir are empty")
 	}
@@ -24,10 +19,8 @@ func (g *Goflare) Build() error {
 	var buildErrors []error
 
 	if g.Config.Entry != "" {
-		if !edgeJSEnabled() {
-			if err := validateEntry(g.Config.Entry); err != nil {
-				return fmt.Errorf("mode detection failed: %w", err)
-			}
+		if err := validateEntry(g.Config.Entry); err != nil {
+			return fmt.Errorf("mode detection failed: %w", err)
 		}
 		if err := g.buildWorker(); err != nil {
 			buildErrors = append(buildErrors, fmt.Errorf("worker build failed: %w", err))
@@ -48,37 +41,10 @@ func (g *Goflare) Build() error {
 }
 
 const (
-	// CompilerModeStdlib builds the frontend with standard Go instead of TinyGo:
-	// large binary, fast build, no minification. This is the development mode.
-	CompilerModeStdlib = "L"
-
 	// moduleRoot is the directory goflare runs from. Every project source path
 	// — edge/main.go, web/client.go — resolves from here.
 	moduleRoot = "."
 )
-
-// siteMode translates goflare's compiler mode into sitec's.
-func siteMode(compilerMode string) sitec.Mode {
-	if compilerMode == CompilerModeStdlib {
-		return sitec.ModeDev
-	}
-	return sitec.ModeRelease
-}
-
-// moveFile renames src to dst, falling back to copy+delete across filesystems.
-func moveFile(src, dst string) error {
-	if err := os.Rename(src, dst); err == nil {
-		return nil
-	}
-	data, err := os.ReadFile(src)
-	if err != nil {
-		return err
-	}
-	if err := os.WriteFile(dst, data, 0644); err != nil {
-		return err
-	}
-	return os.Remove(src)
-}
 
 func (g *Goflare) buildWorker() error {
 	// 1. Verify Entry file exists
@@ -91,37 +57,8 @@ func (g *Goflare) buildWorker() error {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 
-	// 2b. Go -> ESM edge build (zero edge.wasm)
-	if edgeJSEnabled() {
-		return g.buildWorkerJS()
-	}
-
-	// 3. Call generateWasmFile()
-	if err := g.generateWasmFile(); err != nil {
-		return err
-	}
-
-	// 4. Call generateWorkerFile()
-	if err := g.generateWorkerFile(); err != nil {
-		return err
-	}
-
-	// 5. Move files from staging to OutputDir
-	for _, name := range []string{WasmArtifactName, "edge.js"} {
-		src := filepath.Join(g.stagingDir, name)
-		dst := filepath.Join(g.Config.OutputDir, name)
-		if err := moveFile(src, dst); err != nil && !os.IsNotExist(err) {
-			return err
-		}
-	}
-
-	// 6. Check WASM size
-	wasmPath := filepath.Join(g.Config.OutputDir, WasmArtifactName)
-	if err := CheckWasmSize(wasmPath, g.Logger); err != nil {
-		return err
-	}
-
-	return nil
+	// 3. The edge is JavaScript only: goesm output (app.js) + the module Worker (edge.js).
+	return g.buildWorkerJS()
 }
 
 func (g *Goflare) buildPages() error {
@@ -135,7 +72,7 @@ func (g *Goflare) buildPages() error {
 	g.Logger("building site →", g.Config.PublicDir)
 	site, err := g.siteBuilder(sitec.BuildConfig{
 		RootDir:   moduleRoot,
-		Mode:      siteMode(g.Config.CompilerMode),
+		Mode:      sitec.ModeRelease,
 		OutputDir: g.Config.PublicDir,
 		AppName:   g.Config.ProjectName,
 		Log:       g.Logger,

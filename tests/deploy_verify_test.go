@@ -17,7 +17,7 @@ import (
 func TestDeployVerify_Success(t *testing.T) {
 	env := newTestEnv(t)
 	env.writeOutput("edge.js", "console.log('edge')")
-	env.writeOutput("edge.wasm", "wasm")
+	env.writeOutput(goflare.AppModule, "export const app = true;")
 
 	os.Setenv("CLOUDFLARE_API_TOKEN", "valid-token")
 	defer os.Unsetenv("CLOUDFLARE_API_TOKEN")
@@ -74,7 +74,7 @@ func TestDeployVerify_Success(t *testing.T) {
 func TestDeployVerify_MissingHeaderFails(t *testing.T) {
 	env := newTestEnv(t)
 	env.writeOutput("edge.js", "console.log('edge')")
-	env.writeOutput("edge.wasm", "wasm")
+	env.writeOutput(goflare.AppModule, "export const app = true;")
 
 	os.Setenv("CLOUDFLARE_API_TOKEN", "valid-token")
 	defer os.Unsetenv("CLOUDFLARE_API_TOKEN")

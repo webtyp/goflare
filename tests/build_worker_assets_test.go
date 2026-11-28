@@ -84,14 +84,18 @@ func main() {}
 				t.Fatalf("Build failed for import %s: %v", imp, err)
 			}
 
-			edgeJs := filepath.Join(outputDir, "edge.js")
-			edgeWasm := filepath.Join(outputDir, "edge.wasm")
+			edgeJs := filepath.Join(outputDir, goflare.EdgeModule)
+			appJs := filepath.Join(outputDir, goflare.AppModule)
 
 			if _, err := os.Stat(edgeJs); os.IsNotExist(err) {
 				t.Errorf("Expected %s to exist", edgeJs)
 			}
-			if _, err := os.Stat(edgeWasm); os.IsNotExist(err) {
-				t.Errorf("Expected %s to exist", edgeWasm)
+			if info, err := os.Stat(appJs); err != nil || info.Size() == 0 {
+				t.Errorf("Expected a non-empty %s (the goesm output), err=%v", appJs, err)
+			}
+			// The edge is JavaScript only.
+			if _, err := os.Stat(filepath.Join(outputDir, "edge.wasm")); err == nil {
+				t.Errorf("edge.wasm must not exist: the edge compiles to JavaScript with goesm")
 			}
 
 			// functions/ must NOT exist

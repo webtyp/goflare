@@ -25,9 +25,9 @@ func TestEventsPaths(t *testing.T) {
 	if len(gotUnobserved) != 2 {
 		t.Fatalf("UnobservedFiles() returned %d files, want 2", len(gotUnobserved))
 	}
-	wantWasm := filepath.Join("web", "edge", goflare.WasmArtifactName)
-	wantJs := filepath.Join("web", "edge", "edge.js")
-	if gotUnobserved[0] != wantWasm || gotUnobserved[1] != wantJs {
-		t.Errorf("UnobservedFiles() = %v, want [%q, %q]", gotUnobserved, wantWasm, wantJs)
+	wantEdge := filepath.Join("web", "edge", goflare.EdgeModule)
+	wantApp := filepath.Join("web", "edge", goflare.AppModule)
+	if gotUnobserved[0] != wantEdge || gotUnobserved[1] != wantApp {
+		t.Errorf("UnobservedFiles() = %v, want [%q, %q]", gotUnobserved, wantEdge, wantApp)
 	}
 }

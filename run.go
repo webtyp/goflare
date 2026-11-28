@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
 
 	"webtyp.com/gobuild"
@@ -81,32 +79,16 @@ func RunTinyGo(out io.Writer) error {
 	return nil
 }
 
-// RunSize runs the size diagnostic subcommand.
-func RunSize(envPath string, out io.Writer) error {
+// RunImports lists the forbidden standard-library imports reachable from the edge entry.
+func RunImports(envPath string, out io.Writer) error {
 	cfg, err := LoadConfigFromEnv(envPath)
 	if err != nil {
 		return err
 	}
 
-	wasmPath := filepath.Join(cfg.OutputDir, WasmArtifactName)
-	if _, err := os.Stat(wasmPath); err == nil {
-		_ = CheckWasmSize(wasmPath, func(msgs ...any) {
-			fmt.Fprintln(out, msgs...)
-		})
-	}
-
 	entryDir := cfg.Entry
 	if entryDir == "" {
 		entryDir = "edge"
-	}
-
-	if info, err := os.Stat(entryDir); err == nil && info.IsDir() {
-		bd, err := SizeBreakdown(entryDir)
-		if err != nil {
-			fmt.Fprintln(out, "Size breakdown error:", err)
-		} else {
-			fmt.Fprintln(out, bd)
-		}
 	}
 
 	entryPkg := "./" + entryDir
@@ -202,9 +184,9 @@ func Usage() string {
 
 Commands:
   auth      Validate CLOUDFLARE_API_TOKEN from environment
-  build     Build the project (compiles WASM and/or copies assets)
+  build     Build the project (edge to JavaScript with goesm, site with sitec)
   deploy    Deploy the project to Cloudflare (requires CLOUDFLARE_API_TOKEN env var)
-  size      Break down the edge wasm size per package and list forbidden imports
+  imports   List the forbidden standard-library imports reachable from the edge
   tinygo    Install TinyGo when missing and print its bin directory and version
   d1-id     Print the D1 database ID for the configured D1Name
 

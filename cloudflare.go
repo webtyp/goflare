@@ -27,7 +27,6 @@ const ErrMsgRateLimitPermission = "rate limit: the Cloudflare API token cannot e
 
 const (
 	contentTypeESModule = "application/javascript+module"
-	contentTypeWasm     = "application/wasm"
 )
 
 type CfClient struct {
@@ -212,19 +211,19 @@ func (g *Goflare) Deploy() error {
 	}
 
 	hasAssets := hasFilesInDir(g.Config.PublicDir)
-	edgeJsPath := filepath.Join(g.Config.OutputDir, "edge.js")
-	edgeWasmPath := filepath.Join(g.Config.OutputDir, "edge.wasm")
+	edgeJsPath := filepath.Join(g.Config.OutputDir, EdgeModule)
+	appJsPath := filepath.Join(g.Config.OutputDir, AppModule)
 
 	hasScript := false
 	if _, err := os.Stat(edgeJsPath); err == nil {
 		hasScript = true
-		if _, err := os.Stat(edgeWasmPath); os.IsNotExist(err) {
-			return fmt.Errorf("missing artifact: edge.wasm")
+		if _, err := os.Stat(appJsPath); os.IsNotExist(err) {
+			return fmt.Errorf("missing artifact: %s", AppModule)
 		}
 	}
 
 	if !hasAssets && !hasScript {
-		return fmt.Errorf("nothing to deploy: neither %s nor %s/edge.js exist", g.Config.PublicDir, g.Config.OutputDir)
+		return fmt.Errorf("nothing to deploy: neither %s nor %s/%s exist", g.Config.PublicDir, g.Config.OutputDir, EdgeModule)
 	}
 
 	var completionToken string
@@ -251,7 +250,7 @@ func (g *Goflare) Deploy() error {
 	}
 
 	if hasScript {
-		metadata["main_module"] = "edge.js"
+		metadata["main_module"] = EdgeModule
 	}
 
 	if hasAssets {
@@ -322,10 +321,10 @@ func (g *Goflare) Deploy() error {
 	}
 
 	if hasScript {
-		if err := addFilePart(mw, "edge.js", edgeJsPath, contentTypeESModule); err != nil {
+		if err := addFilePart(mw, EdgeModule, edgeJsPath, contentTypeESModule); err != nil {
 			return err
 		}
-		if err := addFilePart(mw, "edge.wasm", edgeWasmPath, contentTypeWasm); err != nil {
+		if err := addFilePart(mw, AppModule, appJsPath, contentTypeESModule); err != nil {
 			return err
 		}
 	}
